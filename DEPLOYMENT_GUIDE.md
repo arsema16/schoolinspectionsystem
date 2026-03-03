@@ -54,7 +54,6 @@ git push -u origin main
 5. Add Environment Variables:
    - `MONGODB_URI`: Your MongoDB Atlas connection string
    - `JWT_SECRET`: A random secure string (e.g., `your_super_secret_key_12345`)
-   - `NODE_ENV`: `production`
 
 6. Click "Create Web Service"
 
@@ -91,7 +90,6 @@ heroku create school-inspection-system
 ```bash
 heroku config:set MONGODB_URI="your_mongodb_connection_string"
 heroku config:set JWT_SECRET="your_super_secret_key"
-heroku config:set NODE_ENV="production"
 ```
 
 4. Deploy:
@@ -123,7 +121,6 @@ heroku open
 4. Add environment variables in the Variables tab:
    - `MONGODB_URI`
    - `JWT_SECRET`
-   - `NODE_ENV=production`
 
 5. Railway will automatically deploy
 

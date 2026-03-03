@@ -2,9 +2,9 @@ const mongoose = require("mongoose");
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(
-      "mongodb+srv://schooladmin:arse123@cluster0.idnv9bs.mongodb.net/?appName=Cluster0"
-    );
+    const mongoURI = process.env.MONGODB_URI || "mongodb+srv://schooladmin:arse123@cluster0.idnv9bs.mongodb.net/?appName=Cluster0";
+    
+    await mongoose.connect(mongoURI);
 
     console.log("MongoDB Connected Successfully");
   } catch (error) {

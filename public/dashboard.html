@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Longitudinal Inspection System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-role {
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .btn-logout {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .filters {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        .filters h3 {
+            margin-bottom: 1rem;
+            color: #667eea;
+        }
+
+        .filter-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-item label {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            color: #666;
+        }
+
+        .filter-item select,
+        .filter-item input {
+            padding: 0.6rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .btn-apply {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.7rem 2rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+
+        .btn-apply:hover {
+            background: #5568d3;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 0.5rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 1rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th {
+            background: #f8f9fa;
+            padding: 0.8rem;
+            text-align: left;
+            font-weight: 600;
+            color: #667eea;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        table td {
+            padding: 0.8rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-danger {
+            background: #fee;
+            color: #c33;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #999;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+
+        .report-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-top: 2rem;
+        }
+
+        .report-section h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .report-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn-generate {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .btn-generate:hover {
+            background: #218838;
+        }
+
+        .btn-download {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-download:hover {
+            background: #138496;
+        }
+
+        .prediction-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid #667eea;
+        }
+
+        .prediction-subject {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .prediction-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .prediction-confidence {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.3rem;
+        }
+
+        .correlation-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .correlation-header {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .correlation-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>📊 Longitudinal Inspection Dashboard</h1>
+            <div class="user-info">
+                <span class="user-role" id="userRole">Loading...</span>
+                <button class="btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Filters Section -->
+        <div class="filters">
+            <h3>🔍 Filters</h3>
+            <div class="filter-group">
+                <div class="filter-item">
+                    <label for="filterGrade">Grade Level</label>
+                    <select id="filterGrade">
+                        <option value="">All Grades</option>
+                        <option value="9">Grade 9</option>
+                        <option value="10">Grade 10</option>
+                        <option value="11">Grade 11</option>
+                        <option value="12">Grade 12</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="filterGender">Gender</label>
+                    <select id="filterGender">
+                        <option value="">All</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="filterSemester">Semester</label>
+                    <select id="filterSemester">
+                        <option value="">All Semesters</option>
+                        <option value="1">Semester 1</option>
+                        <option value="2">Semester 2</option>
+                        <option value="average">Yearly Average</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="filterSubject">Subject</label>
+                    <select id="filterSubject">
+                        <option value="overall">Overall</option>
+                        <option value="amharic">Amharic</option>
+                        <option value="english">English</option>
+                        <option value="maths">Maths</option>
+                        <option value="physics">Physics</option>
+                        <option value="chemistry">Chemistry</option>
+                        <option value="biology">Biology</option>
+                        <option value="geography">Geography</option>
+                        <option value="history">History</option>
+                        <option value="civics">Civics</option>
+                        <option value="ict">ICT</option>
+                        <option value="hpe">H.P.E</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="filterYears">Years</label>
+                    <select id="filterYears" multiple>
+                        <option value="all" selected>All Years</option>
+                        <option value="2015">2015</option>
+                        <option value="2016">2016</option>
+                        <option value="2017">2017</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn-apply" onclick="applyFilters()">Apply Filters</button>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stat-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalStudents">-</div>
+                <div class="stat-label">Total Students</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avgPerformance">-</div>
+                <div class="stat-label">Avg Performance</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="passRate">-</div>
+                <div class="stat-label">Pass Rate</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="redFlagCount">-</div>
+                <div class="stat-label">Red Flags</div>
+            </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Performance Trends -->
+            <div class="card">
+                <h2>📈 Performance Trends</h2>
+                <div class="chart-container">
+                    <canvas id="trendsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Pass/Fail Rates -->
+            <div class="card">
+                <h2>✅ Pass/Fail Rates</h2>
+                <div class="chart-container">
+                    <canvas id="passRateChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Red-Flagged Students -->
+        <div class="card full-width">
+            <h2>🚩 Red-Flagged Students (At-Risk)</h2>
+            <div class="table-container">
+                <table id="redFlagsTable">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Name</th>
+                            <th>Grade & Year</th>
+                            <th>Overall Avg</th>
+                            <th>Failing Subjects (Count)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="redFlagsBody">
+                        <tr><td colspan="5" class="loading">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Suggestions -->
+        <div class="card full-width">
+            <h2>💡 Insights & Recommendations</h2>
+            <div id="suggestionsContainer">
+                <div class="loading">Loading insights...</div>
+            </div>
+        </div>
+
+        <!-- Infrastructure Analysis -->
+        <div class="card full-width">
+            <h2>🏫 Infrastructure Impact Analysis</h2>
+            <div id="infrastructureContainer">
+                <div class="loading">Loading infrastructure analysis...</div>
+            </div>
+        </div>
+
+        <!-- Predictions -->
+        <div class="card full-width">
+            <h2>🔮 Performance Predictions (2018)</h2>
+            <div id="predictionsContainer">
+                <div class="loading">Loading predictions...</div>
+            </div>
+        </div>
+
+        <!-- Report Generation -->
+        <div class="report-section">
+            <h2>📄 Generate Report</h2>
+            <div class="report-options">
+                <div class="filter-item">
+                    <label for="reportType">Report Type</label>
+                    <select id="reportType">
+                        <option value="performance_summary">Performance Summary</option>
+                        <option value="red_flags">Red Flags Report</option>
+                        <option value="infrastructure_correlation">Infrastructure Correlation</option>
+                        <option value="predictions">Predictions Report</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn-generate" onclick="generateReport()">Generate PDF Report</button>
+            <div id="reportStatus" style="margin-top: 1rem;"></div>
+        </div>
+
+        <!-- Admin Management Section (Admin Only) -->
+        <div id="adminSection" class="admin-section" style="display: none;">
+            <h2>⚙️ Admin Management</h2>
+            
+            <div class="admin-cards">
+                <!-- Student Data Management -->
+                <div class="admin-card">
+                    <h3>📚 Student Data Management</h3>
+                    <p>Import, update, or delete student records</p>
+                    <div class="admin-actions">
+                        <button class="btn-admin" onclick="showImportDialog()">Import Students</button>
+                        <button class="btn-admin" onclick="showStudentManager()">Manage Students</button>
+                    </div>
+                </div>
+
+                <!-- User Management -->
+                <div class="admin-card">
+                    <h3>👥 User Management</h3>
+                    <p>Create and manage user accounts</p>
+                    <div class="admin-actions">
+                        <button class="btn-admin" onclick="window.location.href='/register.html'">Create New User</button>
+                        <button class="btn-admin" onclick="showUserList()">View Users</button>
+                    </div>
+                </div>
+
+                <!-- Audit Logs -->
+                <div class="admin-card">
+                    <h3>📋 Audit Logs</h3>
+                    <p>View system activity and security logs</p>
+                    <div class="admin-actions">
+                        <button class="btn-admin" onclick="showAuditLogs()">View Audit Logs</button>
+                        <button class="btn-admin" onclick="exportAuditLogs()">Export Logs</button>
+                    </div>
+                </div>
+
+                <!-- System Statistics -->
+                <div class="admin-card">
+                    <h3>📊 System Statistics</h3>
+                    <p>View system usage and performance metrics</p>
+                    <div class="admin-actions">
+                        <button class="btn-admin" onclick="showSystemStats()">View Statistics</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Dialog (Admin Only) -->
+    <div id="importDialog" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeImportDialog()">&times;</span>
+            <h2>Import Student Data</h2>
+            <p>Upload an Excel file (.xlsx) with student data</p>
+            <input type="file" id="importFile" accept=".xlsx" />
+            <div class="import-info">
+                <p><strong>File Format:</strong></p>
+                <ul>
+                    <li>Sheet names: Grade-Semester (e.g., "9A Sem 1", "9A Sem 2", "9A Sem Avr")</li>
+                    <li>Required columns: No, Student Name, Age, Sex, Subject marks</li>
+                    <li>Subjects: Amharic, English, Maths, Physics, Chemistry, Biology, Geography, History, Civics, ICT, H.P.E</li>
+                </ul>
+            </div>
+            <button class="btn-primary" onclick="uploadStudentData()">Upload & Import</button>
+            <div id="importStatus"></div>
+        </div>
+    </div>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

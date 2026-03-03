@@ -2,6 +2,7 @@ services:
   - type: web
     name: school-inspection-system
     env: node
+    rootDir: .
     buildCommand: npm install
     startCommand: npm start
     envVars:

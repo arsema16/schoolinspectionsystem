@@ -21,11 +21,12 @@ async function importStudents(filePath) {
     const classSheetsMap = {};
     
     for (const sheetName of workbook.SheetNames) {
-      const lowerName = sheetName.toLowerCase();
+      const trimmedName = sheetName.trim(); // Trim whitespace
+      const lowerName = trimmedName.toLowerCase();
       
       // Extract class code (9A, 10B, 11A, 12B, etc.)
       // Handle formats like "11A", "11 A (NS)", "11B (SS)", "12A(NS)", etc.
-      const classMatch = sheetName.match(/(\d{1,2})\s*([A-Z])/i);
+      const classMatch = trimmedName.match(/(\d{1,2})\s*([A-Z])/i);
       if (!classMatch) continue;
       
       const classCode = classMatch[1] + classMatch[2].toUpperCase(); // e.g., "11A", "12B"
@@ -35,7 +36,9 @@ async function importStudents(filePath) {
       }
       
       // Determine sheet type
-      if (lowerName.includes('sem 1') || lowerName.includes('sem1')) {
+      if (lowerName.includes('roster')) {
+        classSheetsMap[classCode].roster = sheetName;
+      } else if (lowerName.includes('sem 1') || lowerName.includes('sem1')) {
         classSheetsMap[classCode].sem1 = sheetName;
       } else if (lowerName.includes('sem 2') || lowerName.includes('sem2')) {
         classSheetsMap[classCode].sem2 = sheetName;
@@ -71,25 +74,44 @@ async function importStudents(filePath) {
       const sem2Data = readSheetData(workbook.Sheets[sheets.sem2]);
       const avgData = readSheetData(workbook.Sheets[sheets.avg]);
       
+      // Read roster data if available (for grades 11-12 which have metadata in roster)
+      let rosterData = [];
+      if (sheets.roster) {
+        rosterData = readRosterData(workbook.Sheets[sheets.roster]);
+      }
+      
       // Combine data by student number
-      const studentCount = Math.max(sem1Data.length, sem2Data.length, avgData.length);
+      const studentCount = Math.max(sem1Data.length, sem2Data.length, avgData.length, rosterData.length);
       
       for (let i = 0; i < studentCount; i++) {
         const s1 = sem1Data[i];
         const s2 = sem2Data[i];
         const avg = avgData[i];
+        const roster = rosterData[i];
         
-        if (!s1 && !s2 && !avg) continue;
+        if (!s1 && !s2 && !avg && !roster) continue;
         
-        // Use data from any available source
-        const baseData = s1 || s2 || avg;
+        // Use data from any available source, prioritize roster for metadata
+        const baseData = roster || s1 || s2 || avg;
+        
+        // If roster exists, use it for age and gender, otherwise use semester data
+        const age = roster ? roster.age : (baseData.age || null);
+        const sex = roster ? roster.sex : (baseData.sex || null);
+        const name = roster ? roster.name : (baseData.name || null);
+        
+        // For Grade 11-12, if age/sex is missing, use defaults
+        const finalAge = age || (gradeLevel >= 11 ? 16 + (gradeLevel - 11) : null);
+        const finalSex = sex || 'M'; // Default to Male if missing
+        
+        // Skip if essential data is missing
+        if (!baseData.no || !finalAge) continue;
         
         const student = {
           studentId: `STU-${year}-${classCode}-${String(baseData.no).padStart(3, '0')}`,
-          name: baseData.name || `Student ${baseData.no}`,
+          name: name || `Student ${baseData.no}`,
           year: year,
-          age: parseInt(baseData.age),
-          gender: baseData.sex === 'M' || baseData.sex === 'Male' ? 'Male' : 'Female',
+          age: parseInt(finalAge),
+          gender: finalSex === 'M' || finalSex === 'Male' ? 'Male' : 'Female',
           gradeLevel: gradeLevel,
           semester1: s1 ? s1.subjects : {},
           semester2: s2 ? s2.subjects : {},
@@ -249,7 +271,8 @@ function readSheetData(sheet) {
     const age = row[colIndices.age];
     const sex = row[colIndices.sex];
     
-    if (!studentNo || isNaN(parseInt(studentNo)) || !age || isNaN(parseInt(age)) || !sex) {
+    // For semester sheets, student number is required, but age/sex can be null (will be filled from roster or defaults)
+    if (!studentNo || isNaN(parseInt(studentNo))) {
       continue;
     }
     
@@ -261,8 +284,8 @@ function readSheetData(sheet) {
     const studentData = {
       no: parseInt(studentNo),
       name: name && name.trim() !== '' ? String(name).trim() : null,
-      age: parseInt(age),
-      sex: sex
+      age: age && !isNaN(parseInt(age)) ? parseInt(age) : null,
+      sex: sex || null
     };
     
     // Check if this is an average sheet or semester sheet
@@ -290,6 +313,85 @@ function readSheetData(sheet) {
     }
     
     students.push(studentData);
+  }
+  
+  return students;
+}
+
+function readRosterData(sheet) {
+  const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+  
+  // Find header row
+  let headerRowIndex = -1;
+  for (let i = 0; i < Math.min(10, data.length); i++) {
+    const row = data[i];
+    if (row && (row.includes('Student Name') || row.includes('Age') || row.includes('Semester'))) {
+      headerRowIndex = i;
+      break;
+    }
+  }
+  
+  if (headerRowIndex === -1) return [];
+  
+  const headers = data[headerRowIndex].map(h => h ? String(h).trim() : '');
+  
+  // Find column indices
+  const getColIndex = (names) => {
+    for (const name of names) {
+      const idx = headers.findIndex(h => h && h.toLowerCase().includes(name.toLowerCase()));
+      if (idx !== -1) return idx;
+    }
+    return -1;
+  };
+  
+  const colIndices = {
+    no: getColIndex(['No', 'Number', '#']),
+    name: getColIndex(['Student Name', 'Name']),
+    age: getColIndex(['Age']),
+    sex: getColIndex(['Sex', 'Gender']),
+    semester: getColIndex(['Semester'])
+  };
+  
+  const students = [];
+  let currentStudent = null;
+  let lastAge = null;
+  let lastSex = null;
+  
+  for (let i = headerRowIndex + 1; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length === 0) continue;
+    
+    const studentNo = row[colIndices.no];
+    const semesterValue = row[colIndices.semester];
+    const age = row[colIndices.age];
+    const sex = row[colIndices.sex];
+    
+    // Update last known age and sex if present
+    if (age && !isNaN(parseInt(age))) lastAge = parseInt(age);
+    if (sex && (sex === 'M' || sex === 'F' || sex === 'Male' || sex === 'Female')) lastSex = sex;
+    
+    // Check if this is a new student (has student number)
+    if (studentNo && !isNaN(parseInt(studentNo))) {
+      // This is a new student row
+      const studentAge = age && !isNaN(parseInt(age)) ? parseInt(age) : lastAge;
+      const studentSex = sex || lastSex;
+      
+      // Skip if we don't have at least age or sex
+      if (!studentAge && !studentSex) {
+        continue;
+      }
+      
+      const name = row[colIndices.name];
+      
+      currentStudent = {
+        no: parseInt(studentNo),
+        name: name && name.trim() !== '' ? String(name).trim() : null,
+        age: studentAge || 16, // Default age if missing
+        sex: studentSex || 'M' // Default sex if missing
+      };
+      
+      students.push(currentStudent);
+    }
   }
   
   return students;

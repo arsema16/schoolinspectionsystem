@@ -80,19 +80,47 @@ async function importStudents(filePath) {
         rosterData = readRosterData(workbook.Sheets[sheets.roster]);
       }
       
-      // Combine data by student number
-      const studentCount = Math.max(sem1Data.length, sem2Data.length, avgData.length, rosterData.length);
+      // Use average sheet as the authoritative source for student list
+      // Then merge in semester data by student number
+      const studentMap = new Map();
       
-      for (let i = 0; i < studentCount; i++) {
-        const s1 = sem1Data[i];
-        const s2 = sem2Data[i];
-        const avg = avgData[i];
-        const roster = rosterData[i];
+      // First, add all students from average sheet (most complete)
+      avgData.forEach(avg => {
+        studentMap.set(avg.no, {avg});
+      });
+      
+      // Then add students from semester sheets if not already present
+      sem1Data.forEach(s1 => {
+        if (!studentMap.has(s1.no)) {
+          studentMap.set(s1.no, {});
+        }
+        studentMap.get(s1.no).s1 = s1;
+      });
+      
+      sem2Data.forEach(s2 => {
+        if (!studentMap.has(s2.no)) {
+          studentMap.set(s2.no, {});
+        }
+        studentMap.get(s2.no).s2 = s2;
+      });
+      
+      // Add roster data
+      rosterData.forEach(roster => {
+        if (!studentMap.has(roster.no)) {
+          studentMap.set(roster.no, {});
+        }
+        studentMap.get(roster.no).roster = roster;
+      });
+      
+      // Process each student
+      for (const [studentNo, data] of studentMap.entries()) {
+        const {s1, s2, avg, roster} = data;
         
         if (!s1 && !s2 && !avg && !roster) continue;
         
         // Use data from any available source, prioritize roster for metadata
-        const baseData = roster || s1 || s2 || avg;
+        const baseData = avg || s1 || s2 || roster;
+        if (!baseData || !baseData.no) continue;
         
         // If roster exists, use it for age and gender, otherwise use semester data
         const age = roster ? roster.age : (baseData.age || null);
@@ -119,15 +147,10 @@ async function importStudents(filePath) {
           rank: avg ? avg.rank : null
         };
         
-        // Debug for grade 11
-        if (gradeLevel === 11 && i < 2) {
-          console.log(`  Student ${i+1}: ${student.studentId}, Class: ${classCode}`);
-        }
-        
         allStudents.push(student);
       }
       
-      console.log(`  Processed ${studentCount} students from ${classCode}`);
+      console.log(`  Processed ${studentMap.size} students from ${classCode}`);
     }
     
     console.log(`\nTotal students to import: ${allStudents.length}`);
@@ -162,7 +185,10 @@ async function importStudents(filePath) {
     
     if (invalidStudents.length > 0) {
       console.log(`\nFound ${invalidStudents.length} invalid students:`);
-      invalidStudents.slice(0, 5).forEach(s => console.log(`  ${s.id}: ${s.reason}`));
+      invalidStudents.slice(0, 10).forEach(s => console.log(`  ${s.id}: ${s.reason}`));
+      if (invalidStudents.length > 10) {
+        console.log(`  ... and ${invalidStudents.length - 10} more`);
+      }
     }
     
     console.log(`\nImporting ${validStudents.length} valid students...`);
@@ -196,7 +222,7 @@ async function importStudents(filePath) {
     if (errors.length > 0) {
       console.log(`\nFirst ${errors.length} errors:`);
       errors.forEach((e, idx) => {
-        console.log(`${idx+1}. ${e.id}: ${e.error.substring(0, 150)}`);
+        console.log(`${idx+1}. ${e.id}: ${e.error}`);
       });
     }
     

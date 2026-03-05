@@ -23,11 +23,12 @@ async function importStudents(filePath) {
     for (const sheetName of workbook.SheetNames) {
       const lowerName = sheetName.toLowerCase();
       
-      // Extract class code (9A, 10B, etc.)
-      const classMatch = sheetName.match(/(\d{1,2}[A-Z])/i);
+      // Extract class code (9A, 10B, 11A, 12B, etc.)
+      // Handle formats like "11A", "11 A (NS)", "11B (SS)", "12A(NS)", etc.
+      const classMatch = sheetName.match(/(\d{1,2})\s*([A-Z])/i);
       if (!classMatch) continue;
       
-      const classCode = classMatch[1].toUpperCase();
+      const classCode = classMatch[1] + classMatch[2].toUpperCase(); // e.g., "11A", "12B"
       
       if (!classSheetsMap[classCode]) {
         classSheetsMap[classCode] = {};
@@ -38,7 +39,7 @@ async function importStudents(filePath) {
         classSheetsMap[classCode].sem1 = sheetName;
       } else if (lowerName.includes('sem 2') || lowerName.includes('sem2')) {
         classSheetsMap[classCode].sem2 = sheetName;
-      } else if (lowerName.includes('avr') || lowerName.includes('average')) {
+      } else if (lowerName.includes('avr') || lowerName.includes('average') || lowerName.match(/\bav\b/)) {
         classSheetsMap[classCode].avg = sheetName;
       }
     }

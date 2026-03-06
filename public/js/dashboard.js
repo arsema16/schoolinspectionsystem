@@ -19,6 +19,14 @@ document.addEventListener('DOMContentLoaded', () => {
     showAdminSection();
 });
 
+// Listen for messages from child windows (e.g., Student Manager)
+window.addEventListener('message', (event) => {
+    if (event.data && event.data.action === 'refreshDashboard') {
+        console.log('Refreshing dashboard after student deletion...');
+        loadDashboardData();
+    }
+});
+
 // Display user information
 function displayUserInfo() {
     const roleElement = document.getElementById('userRole');
@@ -901,6 +909,7 @@ function closeImportDialog() {
 
 async function uploadStudentData() {
     const fileInput = document.getElementById('importFile');
+    const yearInput = document.getElementById('importYear');
     const statusDiv = document.getElementById('importStatus');
     
     if (!fileInput.files || fileInput.files.length === 0) {
@@ -909,27 +918,63 @@ async function uploadStudentData() {
     }
     
     const file = fileInput.files[0];
+    const year = yearInput.value;
     
     // Check file type
-    if (!file.name.endsWith('.xlsx')) {
-        statusDiv.innerHTML = '<div class="error">Please select an Excel file (.xlsx)</div>';
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+        statusDiv.innerHTML = '<div class="error">Please select an Excel file (.xlsx or .xls)</div>';
         return;
     }
     
-    statusDiv.innerHTML = '<div class="loading">Processing Excel file...</div>';
+    if (!year) {
+        statusDiv.innerHTML = '<div class="error">Please select a year</div>';
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('year', year);
+    
+    statusDiv.innerHTML = '<div class="loading">Uploading and importing data...</div>';
     
     try {
-        // For now, show a message that this feature requires server-side Excel processing
+        const response = await fetch(`${API_BASE}/students/upload`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: formData
+        });
+        
+        if (response.status === 401) {
+            handleUnauthorized();
+            return;
+        }
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Import failed');
+        }
+        
+        const data = await response.json();
         statusDiv.innerHTML = `
-            <div class="error">
-                <p><strong>Excel Import Not Yet Implemented</strong></p>
-                <p>To import student data, please use the command line:</p>
-                <code style="display: block; background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 5px;">
-                    node importStudents.js
-                </code>
-                <p>This will import data from the Excel files in the root directory (2015.xlsx, 2016.xlsx, 2017.xlsx).</p>
+            <div class="success">
+                <p><strong>✓ Import Successful!</strong></p>
+                <p>File: ${data.filename}</p>
+                <p>Year: ${data.year}</p>
+                <p>Imported: ${data.imported} students</p>
+                ${data.updated ? `<p>Updated: ${data.updated} students</p>` : ''}
+                ${data.duplicates ? `<p>Duplicates skipped: ${data.duplicates}</p>` : ''}
+                ${data.failed ? `<p>Failed: ${data.failed}</p>` : ''}
+                <p style="margin-top: 10px; color: #667eea;">Dashboard will refresh in 3 seconds...</p>
             </div>
         `;
+        
+        // Reload dashboard data
+        setTimeout(() => {
+            closeImportDialog();
+            loadDashboardData();
+        }, 3000);
         
     } catch (error) {
         console.error('Import error:', error);
@@ -955,7 +1000,7 @@ async function showStudentManager() {
         const data = await response.json();
         
         // Create a new window with student list
-        const newWindow = window.open('', 'Student Manager', 'width=1000,height=600');
+        const newWindow = window.open('', 'Student Manager', 'width=1200,height=600');
         newWindow.document.write(`
             <html>
             <head>
@@ -964,33 +1009,149 @@ async function showStudentManager() {
                     body { font-family: Arial, sans-serif; padding: 20px; }
                     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
                     th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
-                    th { background-color: #667eea; color: white; }
+                    th { background-color: #667eea; color: white; position: sticky; top: 0; }
                     tr:hover { background-color: #f5f5f5; }
                     h2 { color: #667eea; }
+                    .btn-delete {
+                        background: #dc3545;
+                        color: white;
+                        border: none;
+                        padding: 5px 10px;
+                        border-radius: 3px;
+                        cursor: pointer;
+                        font-size: 12px;
+                    }
+                    .btn-delete:hover {
+                        background: #c82333;
+                    }
+                    .filter-bar {
+                        margin-bottom: 15px;
+                        padding: 10px;
+                        background: #f8f9fa;
+                        border-radius: 5px;
+                    }
+                    .filter-bar select, .filter-bar input {
+                        padding: 5px 10px;
+                        margin-right: 10px;
+                        border: 1px solid #ddd;
+                        border-radius: 3px;
+                    }
                 </style>
             </head>
             <body>
                 <h2>Student Records (${data.students.length} students)</h2>
-                <table>
-                    <tr>
-                        <th>Student ID</th>
-                        <th>Name</th>
-                        <th>Grade</th>
-                        <th>Year</th>
-                        <th>Gender</th>
-                        <th>Age</th>
-                    </tr>
-                    ${data.students.map(s => `
+                <div class="filter-bar">
+                    <select id="filterYear" onchange="filterTable()">
+                        <option value="">All Years</option>
+                        <option value="2015">2015</option>
+                        <option value="2016">2016</option>
+                        <option value="2017">2017</option>
+                        <option value="2018">2018</option>
+                    </select>
+                    <select id="filterGrade" onchange="filterTable()">
+                        <option value="">All Grades</option>
+                        <option value="9">Grade 9</option>
+                        <option value="10">Grade 10</option>
+                        <option value="11">Grade 11</option>
+                        <option value="12">Grade 12</option>
+                    </select>
+                    <input type="text" id="searchName" placeholder="Search by name..." onkeyup="filterTable()" />
+                </div>
+                <table id="studentTable">
+                    <thead>
                         <tr>
-                            <td>${s.studentId}</td>
-                            <td>${s.name}</td>
-                            <td>${s.gradeLevel}</td>
-                            <td>${s.year}</td>
-                            <td>${s.gender}</td>
-                            <td>${s.age || 'N/A'}</td>
+                            <th>Student ID</th>
+                            <th>Name</th>
+                            <th>Grade</th>
+                            <th>Year</th>
+                            <th>Gender</th>
+                            <th>Age</th>
+                            <th>Action</th>
                         </tr>
-                    `).join('')}
+                    </thead>
+                    <tbody>
+                        ${data.students.map(s => `
+                            <tr data-id="${s._id}" data-year="${s.year}" data-grade="${s.gradeLevel}" data-name="${s.name.toLowerCase()}">
+                                <td>${s.studentId}</td>
+                                <td>${s.name}</td>
+                                <td>${s.gradeLevel}</td>
+                                <td>${s.year}</td>
+                                <td>${s.gender}</td>
+                                <td>${s.age || 'N/A'}</td>
+                                <td>
+                                    <button class="btn-delete" onclick="deleteStudent('${s._id}', '${s.name}')">Delete</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
                 </table>
+                <script>
+                    const authToken = '${authToken}';
+                    const API_BASE = '${API_BASE}';
+                    
+                    function filterTable() {
+                        const yearFilter = document.getElementById('filterYear').value;
+                        const gradeFilter = document.getElementById('filterGrade').value;
+                        const searchName = document.getElementById('searchName').value.toLowerCase();
+                        const rows = document.querySelectorAll('#studentTable tbody tr');
+                        
+                        rows.forEach(row => {
+                            const year = row.dataset.year;
+                            const grade = row.dataset.grade;
+                            const name = row.dataset.name;
+                            
+                            const yearMatch = !yearFilter || year === yearFilter;
+                            const gradeMatch = !gradeFilter || grade === gradeFilter;
+                            const nameMatch = !searchName || name.includes(searchName);
+                            
+                            if (yearMatch && gradeMatch && nameMatch) {
+                                row.style.display = '';
+                            } else {
+                                row.style.display = 'none';
+                            }
+                        });
+                    }
+                    
+                    async function deleteStudent(id, name) {
+                        if (!confirm('Are you sure you want to delete student: ' + name + '?')) {
+                            return;
+                        }
+                        
+                        try {
+                            const response = await fetch(API_BASE + '/students/' + id, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Authorization': 'Bearer ' + authToken
+                                }
+                            });
+                            
+                            if (!response.ok) {
+                                const error = await response.json();
+                                throw new Error(error.message || 'Delete failed');
+                            }
+                            
+                            alert('Student deleted successfully');
+                            
+                            // Remove row from table
+                            const row = document.querySelector('tr[data-id="' + id + '"]');
+                            if (row) {
+                                row.remove();
+                            }
+                            
+                            // Update count
+                            const count = document.querySelectorAll('#studentTable tbody tr').length;
+                            document.querySelector('h2').textContent = 'Student Records (' + count + ' students)';
+                            
+                            // Notify parent window to refresh dashboard
+                            if (window.opener && !window.opener.closed) {
+                                window.opener.postMessage({ action: 'refreshDashboard' }, '*');
+                            }
+                            
+                        } catch (error) {
+                            alert('Failed to delete student: ' + error.message);
+                        }
+                    }
+                </script>
             </body>
             </html>
         `);

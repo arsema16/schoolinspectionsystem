@@ -1,6 +1,25 @@
 const Student = require("../models/Student");
 const dataProcessor = require("../services/DataProcessor");
 const auditLogger = require("../services/AuditLogger");
+const multer = require('multer');
+const xlsx = require('xlsx');
+const path = require('path');
+
+// Configure multer for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({ 
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    if (ext !== '.xlsx' && ext !== '.xls') {
+      return cb(new Error('Only Excel files are allowed'));
+    }
+    cb(null, true);
+  }
+});
+
+// Export upload middleware
+exports.uploadMiddleware = upload.single('file');
 
 /**
  * POST /api/students/import
@@ -58,6 +77,137 @@ exports.importStudents = async (req, res) => {
     console.error('Import students error:', error);
     res.status(500).json({ 
       message: "Import failed", 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * POST /api/students/upload
+ * Upload and import Excel file with student data
+ * Admin only
+ */
+exports.uploadExcel = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    // Parse Excel file from buffer
+    const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
+    
+    // Get year from request body or filename
+    let year = req.body.year ? parseInt(req.body.year) : null;
+    
+    // Try to extract year from filename if not provided
+    if (!year) {
+      const match = req.file.originalname.match(/(\d{4})/);
+      if (match) {
+        year = parseInt(match[1]);
+      }
+    }
+    
+    if (!year || ![2015, 2016, 2017, 2018].includes(year)) {
+      return res.status(400).json({ 
+        message: "Valid year (2015-2018) is required. Include year in filename or request body." 
+      });
+    }
+
+    // Process all sheets in the workbook
+    const allStudents = [];
+    const sheetNames = workbook.SheetNames;
+    
+    for (const sheetName of sheetNames) {
+      const sheet = workbook.Sheets[sheetName];
+      const data = xlsx.utils.sheet_to_json(sheet);
+      
+      if (data.length === 0) continue;
+      
+      // Parse sheet name to get grade and section info
+      const gradeMatch = sheetName.match(/(\d+)\s*([A-Z])?/i);
+      if (!gradeMatch) continue;
+      
+      const gradeLevel = parseInt(gradeMatch[1]);
+      const section = gradeMatch[2] || 'A';
+      
+      // Process each row
+      data.forEach((row, index) => {
+        if (!row['Student Name'] && !row['Name']) return;
+        
+        const studentData = {
+          studentId: row['No'] || row['Student ID'] || `${year}-${gradeLevel}${section}-${index + 1}`,
+          name: row['Student Name'] || row['Name'],
+          gradeLevel: gradeLevel,
+          section: section,
+          year: year,
+          age: row['Age'] || null,
+          gender: row['Sex'] || row['Gender'] || null,
+          subjects: []
+        };
+        
+        // Extract subject marks
+        const subjectFields = ['Amharic', 'English', 'Maths', 'Physics', 'Chemistry', 'Biology', 
+                               'Geography', 'History', 'Civics', 'ICT', 'H.P.E'];
+        
+        subjectFields.forEach(subject => {
+          if (row[subject] !== undefined && row[subject] !== null && row[subject] !== '') {
+            const mark = parseFloat(row[subject]);
+            if (!isNaN(mark)) {
+              studentData.subjects.push({
+                subject: subject.toLowerCase(),
+                mark: mark
+              });
+            }
+          }
+        });
+        
+        if (studentData.subjects.length > 0) {
+          allStudents.push(studentData);
+        }
+      });
+    }
+    
+    if (allStudents.length === 0) {
+      return res.status(400).json({ 
+        message: "No valid student data found in Excel file" 
+      });
+    }
+
+    // Import students using DataProcessor
+    const results = await dataProcessor.processBulkImport(allStudents, year);
+
+    // Log import in audit trail
+    await auditLogger.logEvent({
+      action: 'CREATE',
+      entityType: 'Student',
+      entityId: `excel_import_${year}`,
+      userId: req.user.id,
+      username: req.user.username,
+      userRole: req.user.role,
+      changes: {
+        after: {
+          year,
+          filename: req.file.originalname,
+          imported: results.imported,
+          failed: results.failed,
+          duplicates: results.duplicates
+        }
+      },
+      ipAddress: req.ip || req.connection.remoteAddress,
+      userAgent: req.get('user-agent')
+    });
+
+    res.json({
+      message: "Excel file imported successfully",
+      filename: req.file.originalname,
+      year: year,
+      ...results
+    });
+    
+  } catch (error) {
+    console.error('Upload Excel error:', error);
+    res.status(500).json({ 
+      message: "Excel upload failed", 
       error: error.message 
     });
   }

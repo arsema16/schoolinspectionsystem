@@ -25,7 +25,7 @@ All admin management features have been implemented and are now fully functional
 ### 2. Admin Management Features
 
 #### Student Data Management
-- **Import Students**: Opens dialog with instructions (Excel import requires command-line tool)
+- **Import Students**: Opens dialog with information about data import process
 - **Manage Students**: Opens popup window showing all student records with filtering
   - Displays: Student ID, Name, Grade, Year, Gender, Age
   - Fetches from `/api/students` endpoint
@@ -132,17 +132,15 @@ The public registration page (`/register.html`) is available and working:
 
 ## Known Limitations
 
-1. **Excel Import**: The "Import Students" feature shows instructions to use command-line tool (`node importStudents.js`) because the API expects JSON data, not file uploads. To implement browser-based Excel import, you would need to:
-   - Add a library like `xlsx` to parse Excel files in the browser
-   - Or add server-side file upload handling with `multer` and `xlsx`
+1. **Excel Import**: The "Import Students" feature provides information about the server-side import process. Contact your system administrator for data import assistance.
 
 2. **User List Endpoint**: The `/api/auth/users` endpoint may not exist yet. If clicking "View Users" shows an error, you'll need to implement this endpoint in `authController.js`.
 
 ## Next Steps (Optional Enhancements)
 
 1. **Implement Excel File Upload**
-   - Add `multer` middleware for file uploads
-   - Parse Excel files server-side with `xlsx` package
+   - Add file upload middleware for browser-based imports
+   - Parse Excel files server-side
    - Update `/api/students/import` to accept file uploads
 
 2. **Add User Management Endpoint**
@@ -156,9 +154,9 @@ The public registration page (`/register.html`) is available and working:
    - Add pagination for large datasets
 
 4. **Real-time Updates**
-   - Add WebSocket support for live audit log updates
+   - Add real-time notifications for system events
+   - Display live system statistics
    - Show notifications when new users register
-   - Display real-time system statistics
 
 ## Troubleshooting
 

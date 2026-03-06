@@ -516,6 +516,9 @@
         <div class="header-content">
             <h1>📊 Longitudinal Inspection Dashboard</h1>
             <div class="user-info">
+                <button class="btn-logout" onclick="loadDashboardData()" style="background: rgba(255,255,255,0.2); margin-right: 0.5rem;" title="Refresh Dashboard">
+                    🔄 Refresh
+                </button>
                 <span class="user-role" id="userRole">Loading...</span>
                 <button class="btn-logout" onclick="logout()">Logout</button>
             </div>
@@ -738,8 +741,21 @@
         <div class="modal-content">
             <span class="close" onclick="closeImportDialog()">&times;</span>
             <h2>Import Student Data</h2>
-            <p>Upload an Excel file (.xlsx) with student data</p>
-            <input type="file" id="importFile" accept=".xlsx" />
+            <p>Upload an Excel file (.xlsx or .xls) with student data</p>
+            
+            <div class="form-group" style="margin: 1rem 0;">
+                <label for="importYear">Select Year</label>
+                <select id="importYear" style="width: 100%; padding: 0.6rem; border: 1px solid #ddd; border-radius: 5px;">
+                    <option value="">-- Select Year --</option>
+                    <option value="2015">2015</option>
+                    <option value="2016">2016</option>
+                    <option value="2017">2017</option>
+                    <option value="2018">2018</option>
+                </select>
+            </div>
+            
+            <input type="file" id="importFile" accept=".xlsx,.xls" />
+            
             <div class="import-info">
                 <p><strong>File Format:</strong></p>
                 <ul>

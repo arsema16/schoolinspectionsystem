@@ -2,12 +2,17 @@ const express = require("express");
 const router = express.Router();
 const {
   importStudents,
+  uploadExcel,
+  uploadMiddleware,
   getStudents,
   getStudentHistory,
   updateStudent,
   deleteStudent
 } = require("../controllers/studentController");
 const { protect, requireAdmin } = require("../middleware/authMiddleware");
+
+// Upload Excel file - Admin only
+router.post("/upload", protect, requireAdmin, uploadMiddleware, uploadExcel);
 
 // Import students - Admin only
 router.post("/import", protect, requireAdmin, importStudents);

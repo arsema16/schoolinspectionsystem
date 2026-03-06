@@ -12,8 +12,14 @@ if (!authToken) {
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('Page loaded, user role:', userRole);
     displayUserInfo();
     showAdminElements();
+    
+    // Force clear old data and load fresh (temporary for testing)
+    // Remove this line after first load if you want to keep your data
+    // localStorage.removeItem('schoolFacilities');
+    
     loadFacilities();
 });
 
@@ -30,49 +36,53 @@ function showAdminElements() {
     if (userRole === 'Admin') {
         const adminElements = document.querySelectorAll('.admin-only');
         adminElements.forEach(el => {
-            el.style.display = el.tagName === 'TH' || el.tagName === 'TD' ? 'table-cell' : 'block';
+            if (el.tagName === 'TH' || el.tagName === 'TD') {
+                el.style.display = 'table-cell';
+            } else if (el.tagName === 'BUTTON') {
+                el.style.display = 'inline-block';
+            } else {
+                el.style.display = 'block';
+            }
+        });
+    } else {
+        // Hide admin elements for non-admin users
+        const adminElements = document.querySelectorAll('.admin-only');
+        adminElements.forEach(el => {
+            el.style.display = 'none';
         });
     }
 }
 
 // Load facilities from API or localStorage
 async function loadFacilities() {
+    console.log('Loading facilities...');
+    
     try {
         // First check localStorage
         const stored = localStorage.getItem('schoolFacilities');
+        console.log('localStorage data:', stored);
+        
         if (stored) {
-            facilities = JSON.parse(stored);
-            console.log('Loaded from localStorage:', facilities.length, 'facilities');
+            try {
+                facilities = JSON.parse(stored);
+                console.log('Loaded from localStorage:', facilities.length, 'facilities');
+            } catch (parseError) {
+                console.error('Error parsing localStorage:', parseError);
+                facilities = getDefaultFacilities();
+                saveFacilitiesToStorage();
+            }
         } else {
             // Initialize with default data
             console.log('No data in localStorage, loading defaults');
             facilities = getDefaultFacilities();
             saveFacilitiesToStorage();
+            console.log('Saved default facilities:', facilities.length);
         }
 
+        console.log('Facilities array:', facilities);
         renderFacilities();
         updateStatistics();
         
-        // Try to sync with API in background (optional)
-        try {
-            const response = await fetch(`${API_BASE}/infrastructure`, {
-                headers: {
-                    'Authorization': `Bearer ${authToken}`
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                if (data.facilities && data.facilities.length > 0) {
-                    facilities = data.facilities;
-                    saveFacilitiesToStorage();
-                    renderFacilities();
-                    updateStatistics();
-                }
-            }
-        } catch (apiError) {
-            console.log('API not available, using local data');
-        }
     } catch (error) {
         console.error('Error loading facilities:', error);
         // Fallback to default data
@@ -91,7 +101,7 @@ function getDefaultFacilities() {
         { id: '3', name: 'Learning Class', area: 56, capacity: 45, condition: 'Good', computers: 0, notes: '' },
         { id: '4', name: 'Pedagogue Center', area: 72, capacity: 50, condition: 'Good', computers: 0, notes: '' },
         { id: '5', name: 'Vice Office', area: 16, capacity: 5, condition: 'Good', computers: 1, notes: '' },
-        { id: '6', name: 'Secretary Office', area: 20, capacity: 3, condition: 'Good', computers: 2, notes: '' },
+        { id: '6', name: 'Secretary Office', area: 20, capacity: 3, condition: 'Good', computers: 1, notes: '' },
         { id: '7', name: 'Staff Room', area: 52, capacity: 20, condition: 'Good', computers: 0, notes: '' },
         { id: '8', name: 'IT Library', area: 48, capacity: 30, condition: 'Good', computers: 26, notes: '26 computers available' }
     ];

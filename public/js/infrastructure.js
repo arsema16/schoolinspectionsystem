@@ -38,40 +38,46 @@ function showAdminElements() {
 // Load facilities from API or localStorage
 async function loadFacilities() {
     try {
-        // Try to load from API first
-        const response = await fetch(`${API_BASE}/infrastructure`, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            facilities = data.facilities || [];
+        // First check localStorage
+        const stored = localStorage.getItem('schoolFacilities');
+        if (stored) {
+            facilities = JSON.parse(stored);
+            console.log('Loaded from localStorage:', facilities.length, 'facilities');
         } else {
-            // Fallback to localStorage
-            const stored = localStorage.getItem('schoolFacilities');
-            if (stored) {
-                facilities = JSON.parse(stored);
-            } else {
-                // Initialize with default data
-                facilities = getDefaultFacilities();
-                saveFacilitiesToStorage();
-            }
+            // Initialize with default data
+            console.log('No data in localStorage, loading defaults');
+            facilities = getDefaultFacilities();
+            saveFacilitiesToStorage();
         }
 
         renderFacilities();
         updateStatistics();
+        
+        // Try to sync with API in background (optional)
+        try {
+            const response = await fetch(`${API_BASE}/infrastructure`, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.facilities && data.facilities.length > 0) {
+                    facilities = data.facilities;
+                    saveFacilitiesToStorage();
+                    renderFacilities();
+                    updateStatistics();
+                }
+            }
+        } catch (apiError) {
+            console.log('API not available, using local data');
+        }
     } catch (error) {
         console.error('Error loading facilities:', error);
-        // Use localStorage as fallback
-        const stored = localStorage.getItem('schoolFacilities');
-        if (stored) {
-            facilities = JSON.parse(stored);
-        } else {
-            facilities = getDefaultFacilities();
-            saveFacilitiesToStorage();
-        }
+        // Fallback to default data
+        facilities = getDefaultFacilities();
+        saveFacilitiesToStorage();
         renderFacilities();
         updateStatistics();
     }
@@ -101,10 +107,11 @@ function renderFacilities() {
     const tbody = document.getElementById('facilitiesBody');
     
     if (facilities.length === 0) {
+        const colspan = userRole === 'Admin' ? '6' : '5';
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" style="text-align: center; padding: 2rem; color: #999;">
-                    No facilities found. Click "Add Facility" to add one.
+                <td colspan="${colspan}" style="text-align: center; padding: 2rem; color: #999;">
+                    No facilities found. ${userRole === 'Admin' ? 'Click "Add Facility" to add one.' : ''}
                 </td>
             </tr>
         `;
@@ -136,6 +143,8 @@ function renderFacilities() {
             ` : ''}
         </tr>
     `).join('');
+    
+    console.log('Rendered', facilities.length, 'facilities');
 }
 
 // Get condition color

@@ -96,15 +96,56 @@ async function loadFacilities() {
 // Get default facilities data
 function getDefaultFacilities() {
     return [
-        { id: '1', name: 'Library', area: 10, capacity: 30, condition: 'Good', computers: 0, notes: '' },
-        { id: '2', name: 'Laboratory', area: 62, capacity: 40, condition: 'Good', computers: 0, notes: '' },
-        { id: '3', name: 'Learning Class', area: 56, capacity: 45, condition: 'Good', computers: 0, notes: '' },
-        { id: '4', name: 'Pedagogue Center', area: 72, capacity: 50, condition: 'Good', computers: 0, notes: '' },
-        { id: '5', name: 'Vice Office', area: 16, capacity: 5, condition: 'Good', computers: 1, notes: '' },
-        { id: '6', name: 'Secretary Office', area: 20, capacity: 3, condition: 'Good', computers: 1, notes: '' },
-        { id: '7', name: 'Staff Room', area: 52, capacity: 20, condition: 'Good', computers: 0, notes: '' },
-        { id: '8', name: 'IT Library', area: 48, capacity: 30, condition: 'Good', computers: 26, notes: '26 computers available' }
+        { id: '1', name: 'Library', area: 10, capacity: 30, condition: 'Good', computers: 0, notes: '', type: 'library' },
+        { id: '2', name: 'Laboratory', area: 62, capacity: 40, condition: 'Good', computers: 0, notes: '', type: 'laboratory' },
+        { id: '3', name: 'Learning Class', area: 56, capacity: 45, condition: 'Good', computers: 0, notes: '', type: 'classroom' },
+        { id: '4', name: 'Pedagogue Center', area: 72, capacity: 50, condition: 'Good', computers: 0, notes: '', type: 'special' },
+        { id: '5', name: 'Vice Office', area: 16, capacity: 5, condition: 'Good', computers: 1, notes: '', type: 'office' },
+        { id: '6', name: 'Secretary Office', area: 20, capacity: 3, condition: 'Good', computers: 1, notes: '', type: 'office' },
+        { id: '7', name: 'Staff Room', area: 52, capacity: 20, condition: 'Good', computers: 0, notes: '', type: 'staff' },
+        { id: '8', name: 'IT Library', area: 48, capacity: 30, condition: 'Good', computers: 26, notes: '26 computers available', type: 'computer-lab' }
     ];
+}
+
+// Educational standards for facilities (Ethiopian Ministry of Education standards)
+function getStandards() {
+    return {
+        classroom: {
+            minArea: 49, // 7m x 7m = 49 sqm minimum
+            maxStudents: 40, // Maximum 40 students per class
+            areaPerStudent: 1.2, // 1.2 sqm per student minimum
+            description: 'Standard classroom'
+        },
+        laboratory: {
+            minArea: 84, // 12m x 7m = 84 sqm minimum
+            maxStudents: 40,
+            areaPerStudent: 2.1, // 2.1 sqm per student in lab
+            description: 'Science laboratory'
+        },
+        library: {
+            minArea: 100, // Minimum 100 sqm for school library
+            seatsPerStudent: 0.1, // 10% of total students should have seats
+            description: 'School library'
+        },
+        'computer-lab': {
+            minArea: 84, // Same as laboratory
+            maxStudents: 40,
+            computersPerStudent: 0.5, // 1 computer per 2 students minimum
+            description: 'Computer laboratory'
+        },
+        office: {
+            minArea: 12, // Minimum 12 sqm for office
+            description: 'Administrative office'
+        },
+        staff: {
+            minArea: 40, // Minimum 40 sqm for staff room
+            description: 'Staff/Teachers room'
+        },
+        special: {
+            minArea: 49, // Same as classroom
+            description: 'Special purpose room'
+        }
+    };
 }
 
 // Save facilities to localStorage
@@ -112,12 +153,52 @@ function saveFacilitiesToStorage() {
     localStorage.setItem('schoolFacilities', JSON.stringify(facilities));
 }
 
+// Check if facility meets standards
+function checkCompliance(facility) {
+    const standards = getStandards();
+    const standard = standards[facility.type] || standards.special;
+    const issues = [];
+    let compliant = true;
+
+    // Check area
+    if (standard.minArea && facility.area < standard.minArea) {
+        issues.push(`Area too small (${facility.area} ካሬ < ${standard.minArea} ካሬ required)`);
+        compliant = false;
+    }
+
+    // Check capacity vs area
+    if (standard.areaPerStudent && facility.capacity) {
+        const requiredArea = facility.capacity * standard.areaPerStudent;
+        if (facility.area < requiredArea) {
+            issues.push(`Overcrowded (needs ${requiredArea.toFixed(0)} ካሬ for ${facility.capacity} students)`);
+            compliant = false;
+        }
+    }
+
+    // Check max students
+    if (standard.maxStudents && facility.capacity > standard.maxStudents) {
+        issues.push(`Too many students (${facility.capacity} > ${standard.maxStudents} max)`);
+        compliant = false;
+    }
+
+    // Check computers for computer lab
+    if (facility.type === 'computer-lab' && standard.computersPerStudent) {
+        const requiredComputers = Math.ceil(facility.capacity * standard.computersPerStudent);
+        if (facility.computers < requiredComputers) {
+            issues.push(`Not enough computers (${facility.computers} < ${requiredComputers} needed)`);
+            compliant = false;
+        }
+    }
+
+    return { compliant, issues, standard };
+}
+
 // Render facilities table
 function renderFacilities() {
     const tbody = document.getElementById('facilitiesBody');
     
     if (facilities.length === 0) {
-        const colspan = userRole === 'Admin' ? '6' : '5';
+        const colspan = userRole === 'Admin' ? '7' : '6';
         tbody.innerHTML = `
             <tr>
                 <td colspan="${colspan}" style="text-align: center; padding: 2rem; color: #999;">
@@ -128,7 +209,17 @@ function renderFacilities() {
         return;
     }
 
-    tbody.innerHTML = facilities.map(facility => `
+    tbody.innerHTML = facilities.map(facility => {
+        const compliance = checkCompliance(facility);
+        const complianceIcon = compliance.compliant 
+            ? '<span style="color: #28a745; font-size: 1.2rem;" title="Meets standards">✓</span>'
+            : '<span style="color: #dc3545; font-size: 1.2rem;" title="Below standards">✗</span>';
+        
+        const complianceTitle = compliance.compliant 
+            ? 'Meets educational standards'
+            : compliance.issues.join('; ');
+
+        return `
         <tr>
             <td><strong>${facility.name}</strong></td>
             <td>${facility.area} ካሬ</td>
@@ -145,6 +236,7 @@ function renderFacilities() {
                 </span>
             </td>
             <td>${facility.computers || 0}</td>
+            <td title="${complianceTitle}">${complianceIcon}</td>
             ${userRole === 'Admin' ? `
                 <td class="admin-only">
                     <button class="btn-edit" onclick="editFacility('${facility.id}')">Edit</button>
@@ -152,7 +244,8 @@ function renderFacilities() {
                 </td>
             ` : ''}
         </tr>
-    `).join('');
+    `;
+    }).join('');
     
     console.log('Rendered', facilities.length, 'facilities');
 }
@@ -175,29 +268,27 @@ function updateStatistics() {
     const totalArea = facilities.reduce((sum, f) => sum + (parseFloat(f.area) || 0), 0);
     const totalComputers = facilities.reduce((sum, f) => sum + (parseInt(f.computers) || 0), 0);
     
-    // Calculate average condition
-    const conditionScores = {
-        'Excellent': 5,
-        'Good': 4,
-        'Fair': 3,
-        'Poor': 2,
-        'Critical': 1
-    };
-    
-    const avgScore = facilities.length > 0 
-        ? facilities.reduce((sum, f) => sum + (conditionScores[f.condition] || 0), 0) / facilities.length
-        : 0;
-    
-    const avgCondition = avgScore >= 4.5 ? 'Excellent' 
-        : avgScore >= 3.5 ? 'Good'
-        : avgScore >= 2.5 ? 'Fair'
-        : avgScore >= 1.5 ? 'Poor'
-        : 'Critical';
+    // Calculate compliance
+    let compliantCount = 0;
+    facilities.forEach(facility => {
+        const compliance = checkCompliance(facility);
+        if (compliance.compliant) compliantCount++;
+    });
 
     document.getElementById('totalFacilities').textContent = totalFacilities;
     document.getElementById('totalArea').textContent = totalArea.toFixed(0);
     document.getElementById('totalComputers').textContent = totalComputers;
-    document.getElementById('avgCondition').textContent = avgCondition;
+    document.getElementById('compliantCount').textContent = `${compliantCount}/${totalFacilities}`;
+    
+    // Color code compliance
+    const complianceElement = document.getElementById('compliantCount');
+    if (compliantCount === totalFacilities) {
+        complianceElement.style.color = '#28a745'; // Green - all compliant
+    } else if (compliantCount >= totalFacilities / 2) {
+        complianceElement.style.color = '#ffc107'; // Yellow - half compliant
+    } else {
+        complianceElement.style.color = '#dc3545'; // Red - mostly non-compliant
+    }
 }
 
 // Show add modal

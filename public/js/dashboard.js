@@ -70,13 +70,15 @@ function logout() {
     .then(() => {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
-        window.location.href = '/login.html';
+        localStorage.removeItem('username');
+        window.location.href = '/';
     })
     .catch(err => {
         console.error('Logout error:', err);
         localStorage.removeItem('token');
         localStorage.removeItem('role');
-        window.location.href = '/login.html';
+        localStorage.removeItem('username');
+        window.location.href = '/';
     });
 }
 

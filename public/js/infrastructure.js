@@ -23,6 +23,21 @@ document.addEventListener('DOMContentLoaded', () => {
     displayUserInfo();
     showAdminElements();
     loadFacilities();
+    
+    // Set up book search and filter listeners
+    const bookSearch = document.getElementById('bookSearch');
+    const categoryFilter = document.getElementById('categoryFilter');
+    
+    if (bookSearch) {
+        bookSearch.addEventListener('input', filterBooks);
+    }
+    
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', filterBooks);
+    }
+    
+    // Load library books
+    loadLibraryBooks();
 });
 
 // Display user information
@@ -40,30 +55,30 @@ function showAdminElements() {
     console.log('Is Admin:', isAdmin);
     
     if (isAdmin) {
-        // Show Add Facility button
-        const addButton = document.querySelector('.btn-add');
-        if (addButton) {
-            addButton.style.display = 'inline-block';
-            console.log('Add button shown');
-        }
+        // Show all Add buttons
+        const addButtons = document.querySelectorAll('.btn-add');
+        addButtons.forEach(button => {
+            button.style.display = 'inline-block';
+        });
+        console.log('Add buttons shown:', addButtons.length);
         
-        // Show Actions column header
-        const actionsHeader = document.querySelector('th.admin-only');
-        if (actionsHeader) {
-            actionsHeader.style.display = 'table-cell';
-            console.log('Actions header shown');
-        }
+        // Show all Actions column headers
+        const actionsHeaders = document.querySelectorAll('th.admin-only');
+        actionsHeaders.forEach(header => {
+            header.style.display = 'table-cell';
+        });
+        console.log('Actions headers shown:', actionsHeaders.length);
     } else {
         // Hide admin elements
-        const addButton = document.querySelector('.btn-add');
-        if (addButton) {
-            addButton.style.display = 'none';
-        }
+        const addButtons = document.querySelectorAll('.btn-add');
+        addButtons.forEach(button => {
+            button.style.display = 'none';
+        });
         
-        const actionsHeader = document.querySelector('th.admin-only');
-        if (actionsHeader) {
-            actionsHeader.style.display = 'none';
-        }
+        const actionsHeaders = document.querySelectorAll('th.admin-only');
+        actionsHeaders.forEach(header => {
+            header.style.display = 'none';
+        });
     }
 }
 
@@ -562,6 +577,10 @@ function renderBooks() {
     const booksBody = document.getElementById('booksBody');
     const isAdmin = localStorage.getItem('userRole') === 'Admin';
     
+    console.log('=== Rendering Books ===');
+    console.log('Is Admin:', isAdmin);
+    console.log('Filtered Books:', filteredBooks.length);
+    
     if (filteredBooks.length === 0) {
         booksBody.innerHTML = `
             <tr>
@@ -580,21 +599,25 @@ function renderBooks() {
             b.code === book.code
         );
         
+        const actionsColumn = isAdmin ? `
+            <td>
+                <button class="btn-edit" onclick="editBook(${actualIndex})">Edit</button>
+                <button class="btn-delete" onclick="deleteBook(${actualIndex})">Delete</button>
+            </td>
+        ` : '';
+        
         return `
             <tr>
                 <td>${book.category}</td>
                 <td>${book.title}</td>
                 <td>${book.copies}</td>
                 <td>${book.code || '-'}</td>
-                ${isAdmin ? `
-                    <td>
-                        <button class="btn-edit" onclick="editBook(${actualIndex})">Edit</button>
-                        <button class="btn-delete" onclick="deleteBook(${actualIndex})">Delete</button>
-                    </td>
-                ` : ''}
+                ${actionsColumn}
             </tr>
         `;
     }).join('');
+    
+    console.log('Books rendered with actions:', isAdmin);
 }
 
 function filterBooks() {
@@ -684,20 +707,3 @@ window.editBook = editBook;
 window.deleteBook = deleteBook;
 window.saveBook = saveBook;
 window.closeBookModal = closeBookModal;
-
-// Add event listeners for search and filter
-document.addEventListener('DOMContentLoaded', function() {
-    const bookSearch = document.getElementById('bookSearch');
-    const categoryFilter = document.getElementById('categoryFilter');
-    
-    if (bookSearch) {
-        bookSearch.addEventListener('input', filterBooks);
-    }
-    
-    if (categoryFilter) {
-        categoryFilter.addEventListener('change', filterBooks);
-    }
-    
-    // Load library books
-    loadLibraryBooks();
-});

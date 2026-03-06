@@ -907,18 +907,104 @@ async function uploadStudentData() {
     }
     
     const file = fileInput.files[0];
-    const formData = new FormData();
-    formData.append('file', file);
     
-    statusDiv.innerHTML = '<div class="loading">Uploading and importing data...</div>';
+    // Check file type
+    if (!file.name.endsWith('.xlsx')) {
+        statusDiv.innerHTML = '<div class="error">Please select an Excel file (.xlsx)</div>';
+        return;
+    }
+    
+    statusDiv.innerHTML = '<div class="loading">Processing Excel file...</div>';
     
     try {
-        const response = await fetch(`/students/import`, {
-            method: 'POST',
+        // For now, show a message that this feature requires server-side Excel processing
+        statusDiv.innerHTML = `
+            <div class="error">
+                <p><strong>Excel Import Not Yet Implemented</strong></p>
+                <p>To import student data, please use the command line:</p>
+                <code style="display: block; background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 5px;">
+                    node importStudents.js
+                </code>
+                <p>This will import data from the Excel files in the root directory (2015.xlsx, 2016.xlsx, 2017.xlsx).</p>
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error('Import error:', error);
+        statusDiv.innerHTML = `<div class="error">Import failed: ${error.message}</div>`;
+    }
+}
+
+async function showStudentManager() {
+    try {
+        const response = await fetch(`${API_BASE}/students?limit=100`, {
             headers: {
-                'Authorization': `Bearer `
-            },
-            body: formData
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (response.status === 401) {
+            handleUnauthorized();
+            return;
+        }
+        
+        if (!response.ok) throw new Error('Failed to load students');
+        
+        const data = await response.json();
+        
+        // Create a new window with student list
+        const newWindow = window.open('', 'Student Manager', 'width=1000,height=600');
+        newWindow.document.write(`
+            <html>
+            <head>
+                <title>Student Manager</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+                    th { background-color: #667eea; color: white; }
+                    tr:hover { background-color: #f5f5f5; }
+                    h2 { color: #667eea; }
+                </style>
+            </head>
+            <body>
+                <h2>Student Records (${data.students.length} students)</h2>
+                <table>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Grade</th>
+                        <th>Year</th>
+                        <th>Gender</th>
+                        <th>Age</th>
+                    </tr>
+                    ${data.students.map(s => `
+                        <tr>
+                            <td>${s.studentId}</td>
+                            <td>${s.name}</td>
+                            <td>${s.gradeLevel}</td>
+                            <td>${s.year}</td>
+                            <td>${s.gender}</td>
+                            <td>${s.age || 'N/A'}</td>
+                        </tr>
+                    `).join('')}
+                </table>
+            </body>
+            </html>
+        `);
+        
+    } catch (error) {
+        console.error('Error loading students:', error);
+        alert('Failed to load student records');
+    }
+}
+
+async function showUserList() {
+    try {
+        const response = await fetch(`${API_BASE}/auth/users`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
         });
         
         if (response.status === 401) {
@@ -927,38 +1013,64 @@ async function uploadStudentData() {
         }
         
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Import failed');
+            // If endpoint doesn't exist, show a message
+            alert('User Management: This feature requires additional API endpoints. Contact your system administrator.');
+            return;
         }
         
         const data = await response.json();
-        statusDiv.innerHTML = `<div class="success">Successfully imported  students!</div>`;
         
-        // Reload dashboard data
-        setTimeout(() => {
-            closeImportDialog();
-            loadDashboardData();
-        }, 2000);
+        // Create a new window with user list
+        const newWindow = window.open('', 'User Management', 'width=800,height=600');
+        newWindow.document.write(`
+            <html>
+            <head>
+                <title>User Management</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+                    th { background-color: #667eea; color: white; }
+                    tr:hover { background-color: #f5f5f5; }
+                    h2 { color: #667eea; }
+                    .badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; }
+                    .badge-admin { background: #dc3545; color: white; }
+                    .badge-inspector { background: #28a745; color: white; }
+                </style>
+            </head>
+            <body>
+                <h2>User Accounts (${data.users.length} users)</h2>
+                <table>
+                    <tr>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Last Login</th>
+                        <th>Status</th>
+                    </tr>
+                    ${data.users.map(u => `
+                        <tr>
+                            <td>${u.username}</td>
+                            <td><span class="badge badge-${u.role.toLowerCase()}">${u.role}</span></td>
+                            <td>${u.lastLogin ? new Date(u.lastLogin).toLocaleString() : 'Never'}</td>
+                            <td>${u.isActive ? 'Active' : 'Inactive'}</td>
+                        </tr>
+                    `).join('')}
+                </table>
+            </body>
+            </html>
+        `);
         
     } catch (error) {
-        console.error('Import error:', error);
-        statusDiv.innerHTML = `<div class="error">Import failed: </div>`;
+        console.error('Error loading users:', error);
+        alert('User Management: This feature requires additional API endpoints. Contact your system administrator.');
     }
-}
-
-function showStudentManager() {
-    alert('Student Manager: This feature allows you to view, edit, and delete individual student records. Coming soon!');
-}
-
-function showUserList() {
-    alert('User Management: This feature allows you to view and manage user accounts. Coming soon!');
 }
 
 async function showAuditLogs() {
     try {
-        const response = await fetch(`/audit/logs?page=1&limit=50`, {
+        const response = await fetch(`${API_BASE}/audit/logs?page=1&limit=50`, {
             headers: {
-                'Authorization': `Bearer `
+                'Authorization': `Bearer ${authToken}`
             }
         });
         
@@ -971,39 +1083,93 @@ async function showAuditLogs() {
         
         const data = await response.json();
         
-        let logHtml = '<h3>Recent Audit Logs</h3><table style=\"width:100%; border-collapse: collapse;\">';
-        logHtml += '<tr><th>Timestamp</th><th>User</th><th>Action</th><th>Resource</th></tr>';
+        let logHtml = '<h3>Recent Audit Logs</h3><table style="width:100%; border-collapse: collapse;">';
+        logHtml += '<tr><th>Timestamp</th><th>User</th><th>Action</th><th>Resource</th><th>IP Address</th></tr>';
         
         data.logs.forEach(log => {
             const date = new Date(log.timestamp).toLocaleString();
-            logHtml += `<tr><td></td><td></td><td></td><td></td></tr>`;
+            logHtml += `<tr><td>${date}</td><td>${log.username} (${log.userRole})</td><td>${log.action}</td><td>${log.entityType}</td><td>${log.ipAddress || 'N/A'}</td></tr>`;
         });
         
         logHtml += '</table>';
         
-        const newWindow = window.open('', 'Audit Logs', 'width=800,height=600');
+        const newWindow = window.open('', 'Audit Logs', 'width=1000,height=600');
         newWindow.document.write(`<html><head><title>Audit Logs</title><style>
             body { font-family: Arial, sans-serif; padding: 20px; }
             table { border: 1px solid #ddd; }
             th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
-            th { background-color: #4CAF50; color: white; }
-        </style></head><body></body></html>`);
+            th { background-color: #667eea; color: white; }
+            tr:hover { background-color: #f5f5f5; }
+            h3 { color: #667eea; }
+        </style></head><body>${logHtml}</body></html>`);
         
     } catch (error) {
         console.error('Error loading audit logs:', error);
-        alert('Failed to load audit logs');
+        alert('Failed to load audit logs: ' + error.message);
     }
 }
 
 async function exportAuditLogs() {
     try {
-        window.open(`/audit/logs/export?token=`, '_blank');
+        window.open(`${API_BASE}/audit/logs/export?token=${authToken}`, '_blank');
     } catch (error) {
         console.error('Error exporting audit logs:', error);
         alert('Failed to export audit logs');
     }
 }
 
-function showSystemStats() {
-    alert('System Statistics: View detailed system usage metrics, user activity, and performance data. Coming soon!');
+async function showSystemStats() {
+    try {
+        const response = await fetch(`${API_BASE}/audit/stats`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (response.status === 401) {
+            handleUnauthorized();
+            return;
+        }
+        
+        if (!response.ok) throw new Error('Failed to load system stats');
+        
+        const data = await response.json();
+        
+        let statsHtml = '<h3>System Statistics</h3>';
+        statsHtml += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 20px;">';
+        
+        // User statistics
+        statsHtml += `
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                <h4 style="color: #667eea;">User Activity</h4>
+                <p><strong>Total Users:</strong> ${data.totalUsers || 0}</p>
+                <p><strong>Active Sessions:</strong> ${data.activeSessions || 0}</p>
+                <p><strong>Failed Login Attempts (24h):</strong> ${data.failedLogins || 0}</p>
+            </div>
+        `;
+        
+        // System activity
+        statsHtml += `
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                <h4 style="color: #667eea;">System Activity</h4>
+                <p><strong>Total Actions (24h):</strong> ${data.totalActions || 0}</p>
+                <p><strong>Data Imports:</strong> ${data.imports || 0}</p>
+                <p><strong>Reports Generated:</strong> ${data.reports || 0}</p>
+            </div>
+        `;
+        
+        statsHtml += '</div>';
+        
+        const newWindow = window.open('', 'System Statistics', 'width=800,height=600');
+        newWindow.document.write(`<html><head><title>System Statistics</title><style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            h3 { color: #667eea; }
+            h4 { margin-top: 0; }
+            p { margin: 10px 0; }
+        </style></head><body>${statsHtml}</body></html>`);
+        
+    } catch (error) {
+        console.error('Error loading system stats:', error);
+        alert('Failed to load system statistics: ' + error.message);
+    }
 }

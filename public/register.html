@@ -10,10 +10,6 @@
     <input type="text" id="username" placeholder="Username" required>
     <input type="password" id="password" placeholder="Password" required>
     <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
-    <select id="role">
-      <option value="Inspector">Inspector</option>
-      <option value="Admin">Admin</option>
-    </select>
     <button onclick="register()">Register</button>
     <p style="margin-top: 15px; font-size: 14px;">
       Already have an account? <a href="login.html">Login here</a>
@@ -26,7 +22,6 @@ async function register() {
   const username = document.getElementById('username').value;
   const password = document.getElementById('password').value;
   const confirmPassword = document.getElementById('confirmPassword').value;
-  const role = document.getElementById('role').value;
   const messageDiv = document.getElementById('message');
 
   // Validation
@@ -52,23 +47,11 @@ async function register() {
       body: JSON.stringify({
         username: username,
         password: password,
-        role: role
+        role: "Inspector" // Default role for public registration
       })
     });
 
-    // Check if response has content
-    const text = await res.text();
-    console.log('Server response:', text);
-    
-    let data;
-    try {
-      data = text ? JSON.parse(text) : {};
-    } catch (e) {
-      messageDiv.style.color = 'red';
-      messageDiv.textContent = 'Server error: Invalid response. Check if database is connected.';
-      console.error('Response text:', text);
-      return;
-    }
+    const data = await res.json();
 
     if (res.ok) {
       messageDiv.style.color = 'green';

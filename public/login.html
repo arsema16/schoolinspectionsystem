@@ -14,18 +14,31 @@
 
 <script>
 async function login() {
-  const res = await fetch("/api/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      username: username.value,
-      password: password.value
-    })
-  });
+  try {
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: username.value,
+        password: password.value
+      })
+    });
 
-  const data = await res.json();
-  localStorage.setItem("token", data.token);
-  window.location.href = "dashboard.html";
+    if (!res.ok) {
+      const error = await res.json();
+      alert(error.message || "Login failed");
+      return;
+    }
+
+    const data = await res.json();
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("role", data.role);
+    localStorage.setItem("username", data.username);
+    window.location.href = "dashboard.html";
+  } catch (error) {
+    console.error("Login error:", error);
+    alert("Login failed. Please try again.");
+  }
 }
 </script>
 </body>

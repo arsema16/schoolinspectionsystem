@@ -355,11 +355,16 @@ function showAddModal() {
     document.getElementById('facilityModal').style.display = 'block';
 }
 
-// Edit facility
-function editFacility(id) {
+// Edit facility - make it globally accessible
+window.editFacility = function(id) {
+    console.log('Edit facility called for ID:', id);
     const facility = facilities.find(f => f.id === id);
-    if (!facility) return;
+    if (!facility) {
+        console.error('Facility not found:', id);
+        return;
+    }
 
+    console.log('Editing facility:', facility);
     document.getElementById('modalTitle').textContent = 'Edit Facility';
     document.getElementById('facilityId').value = facility.id;
     document.getElementById('facilityName').value = facility.name;
@@ -373,10 +378,14 @@ function editFacility(id) {
     document.getElementById('facilityModal').style.display = 'block';
 }
 
-// Delete facility
-function deleteFacility(id) {
+// Delete facility - make it globally accessible
+window.deleteFacility = function(id) {
+    console.log('Delete facility called for ID:', id);
     const facility = facilities.find(f => f.id === id);
-    if (!facility) return;
+    if (!facility) {
+        console.error('Facility not found:', id);
+        return;
+    }
 
     if (!confirm(`Are you sure you want to delete "${facility.name}"?`)) {
         return;
@@ -462,3 +471,117 @@ window.onclick = function(event) {
         closeModal();
     }
 }
+
+
+// Library Books Management
+let libraryBooks = [];
+let filteredBooks = [];
+
+async function loadLibraryBooks() {
+    try {
+        const response = await fetch('/data/library-books.json');
+        const data = await response.json();
+        
+        // Flatten the books data with category information
+        libraryBooks = [];
+        data.categories.forEach(category => {
+            category.books.forEach(book => {
+                libraryBooks.push({
+                    category: category.name,
+                    title: book.title,
+                    copies: book.copies,
+                    code: book.code
+                });
+            });
+        });
+        
+        filteredBooks = [...libraryBooks];
+        
+        // Populate category filter
+        populateCategoryFilter(data.categories);
+        
+        // Render books
+        renderBooks();
+        
+        // Update totals
+        document.getElementById('totalBooks').textContent = data.totalBooks.toLocaleString();
+        document.getElementById('totalCategories').textContent = data.totalCategories;
+        
+    } catch (error) {
+        console.error('Error loading library books:', error);
+        document.getElementById('booksBody').innerHTML = `
+            <tr>
+                <td colspan="4" style="text-align: center; padding: 2rem; color: #dc3545;">
+                    Error loading library books
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function populateCategoryFilter(categories) {
+    const categoryFilter = document.getElementById('categoryFilter');
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.name;
+        option.textContent = `${category.name} (${category.books.length})`;
+        categoryFilter.appendChild(option);
+    });
+}
+
+function renderBooks() {
+    const booksBody = document.getElementById('booksBody');
+    
+    if (filteredBooks.length === 0) {
+        booksBody.innerHTML = `
+            <tr>
+                <td colspan="4" style="text-align: center; padding: 2rem; color: #999;">
+                    No books found
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    booksBody.innerHTML = filteredBooks.map(book => `
+        <tr>
+            <td>${book.category}</td>
+            <td>${book.title}</td>
+            <td>${book.copies}</td>
+            <td>${book.code || '-'}</td>
+        </tr>
+    `).join('');
+}
+
+function filterBooks() {
+    const searchTerm = document.getElementById('bookSearch').value.toLowerCase();
+    const categoryFilter = document.getElementById('categoryFilter').value;
+    
+    filteredBooks = libraryBooks.filter(book => {
+        const matchesSearch = book.title.toLowerCase().includes(searchTerm) || 
+                            book.category.toLowerCase().includes(searchTerm) ||
+                            book.code.toLowerCase().includes(searchTerm);
+        const matchesCategory = !categoryFilter || book.category === categoryFilter;
+        
+        return matchesSearch && matchesCategory;
+    });
+    
+    renderBooks();
+}
+
+// Add event listeners for search and filter
+document.addEventListener('DOMContentLoaded', function() {
+    const bookSearch = document.getElementById('bookSearch');
+    const categoryFilter = document.getElementById('categoryFilter');
+    
+    if (bookSearch) {
+        bookSearch.addEventListener('input', filterBooks);
+    }
+    
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', filterBooks);
+    }
+    
+    // Load library books
+    loadLibraryBooks();
+});

@@ -318,69 +318,178 @@
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+            
+            .facilities-table {
+                font-size: 0.9rem;
+            }
         }
 
         @media (max-width: 768px) {
             .container {
                 padding: 0 1rem;
+                margin: 1rem auto;
+            }
+
+            .header {
+                padding: 1rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
             }
 
             .header h1 {
-                font-size: 1.2rem;
+                font-size: 1.3rem;
             }
 
             .header-left {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 0.5rem;
+                width: 100%;
             }
 
-            .stats-grid {
-                grid-template-columns: 1fr;
-                gap: 1rem;
+            .user-info {
+                width: 100%;
+                justify-content: space-between;
             }
 
-            .facilities-table {
-                font-size: 0.85rem;
-            }
-
-            .facilities-table th,
-            .facilities-table td {
-                padding: 0.5rem;
-            }
-
-            /* Make table scrollable on mobile */
-            .facilities-section {
-                overflow-x: auto;
-            }
-
-            .facilities-table {
-                min-width: 800px;
-            }
-
-            .btn-edit, .btn-delete {
-                padding: 0.3rem 0.6rem;
-                font-size: 0.75rem;
-            }
-
-            .modal-content {
-                width: 95%;
-                margin: 10% auto;
+            .page-header {
                 padding: 1.5rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .header {
-                padding: 1rem;
             }
 
             .page-header h2 {
                 font-size: 1.5rem;
             }
 
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+            }
+
+            .stat-card {
+                padding: 1rem;
+            }
+
             .stat-value {
-                font-size: 2rem;
+                font-size: 1.8rem;
+            }
+
+            .facilities-section {
+                padding: 1rem;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            /* Make table scrollable horizontally on mobile */
+            .facilities-table {
+                min-width: 900px;
+                font-size: 0.85rem;
+                display: table;
+            }
+
+            .facilities-table th,
+            .facilities-table td {
+                padding: 0.6rem 0.4rem;
+                font-size: 0.8rem;
+            }
+
+            .btn-edit, .btn-delete {
+                padding: 0.3rem 0.6rem;
+                font-size: 0.75rem;
+                margin-right: 0.3rem;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
+                padding: 1.5rem;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            .form-group {
+                margin-bottom: 1rem;
+            }
+
+            .form-group input,
+            .form-group select,
+            .form-group textarea {
+                padding: 0.6rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 0.8rem;
+            }
+
+            .header h1 {
+                font-size: 1.1rem;
+            }
+
+            .page-header {
+                padding: 1rem;
+            }
+
+            .page-header h2 {
+                font-size: 1.3rem;
+            }
+
+            .page-header p {
+                font-size: 0.9rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .stat-label {
+                font-size: 0.8rem;
+            }
+
+            .facilities-section {
+                padding: 0.8rem;
+            }
+
+            .section-header h3 {
+                font-size: 1.2rem;
+            }
+
+            .btn-add {
+                width: 100%;
+                padding: 0.8rem;
+            }
+
+            /* Add scroll hint for mobile */
+            .facilities-section::after {
+                content: '← Scroll to see more →';
+                display: block;
+                text-align: center;
+                color: #999;
+                font-size: 0.75rem;
+                margin-top: 0.5rem;
+                font-style: italic;
+            }
+        }
+
+        /* Landscape mobile */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
             }
         }
     </style>
@@ -429,7 +538,9 @@
         <div class="facilities-section">
             <div class="section-header">
                 <h3>Facilities Inventory</h3>
-                <button class="btn-add admin-only" onclick="showAddModal()">+ Add Facility</button>
+                <div>
+                    <button class="btn-add admin-only" onclick="showAddModal()" style="display: none;">+ Add Facility</button>
+                </div>
             </div>
 
             <table class="facilities-table">
@@ -448,6 +559,42 @@
                     <tr>
                         <td colspan="7" style="text-align: center; padding: 2rem; color: #999;">
                             Loading facilities...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Library Books Inventory -->
+        <div class="facilities-section">
+            <div class="section-header">
+                <h3>📚 Library Books Inventory</h3>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <input type="text" id="bookSearch" placeholder="Search books..." style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px; width: 250px;">
+                    <select id="categoryFilter" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 5px;">
+                <strong>Total Books: <span id="totalBooks">1,992</span></strong> | 
+                <strong>Categories: <span id="totalCategories">17</span></strong>
+            </div>
+
+            <table class="facilities-table">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Title</th>
+                        <th>Copies</th>
+                        <th>Code</th>
+                    </tr>
+                </thead>
+                <tbody id="booksBody">
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 2rem; color: #999;">
+                            Loading library books...
                         </td>
                     </tr>
                 </tbody>

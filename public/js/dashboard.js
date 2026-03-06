@@ -79,6 +79,7 @@ function logout() {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
         localStorage.removeItem('username');
+        localStorage.removeItem('selectedInspectionArea');
         window.location.href = '/';
     })
     .catch(err => {
@@ -86,6 +87,7 @@ function logout() {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
         localStorage.removeItem('username');
+        localStorage.removeItem('selectedInspectionArea');
         window.location.href = '/';
     });
 }

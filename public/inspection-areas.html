@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspection Areas - School Inspection System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            color: white;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-role {
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .btn-logout {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        .page-title {
+            text-align: center;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .page-title h2 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-title p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .inspection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .inspection-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .inspection-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .inspection-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .inspection-card h3 {
+            color: #667eea;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .inspection-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .inspection-card .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: auto;
+        }
+
+        .inspection-card:hover .btn {
+            background: #5568d3;
+        }
+
+        .admin-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .admin-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .admin-card h3 {
+            color: #667eea;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .admin-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn-admin {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .btn-admin:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>📋 School Inspection System</h1>
+            <div class="user-info">
+                <span class="user-role" id="userRole">Loading...</span>
+                <button class="btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="page-title">
+            <h2>Select Inspection Area</h2>
+            <p>Choose an area to inspect and analyze</p>
+        </div>
+
+        <div class="inspection-grid">
+            <!-- Infrastructure -->
+            <a href="javascript:void(0)" onclick="selectArea('infrastructure')" class="inspection-card">
+                <div class="inspection-icon">🏫</div>
+                <h3>School Facilities & Infrastructure</h3>
+                <p>Inspect classrooms, laboratories, libraries, sports facilities, and overall school infrastructure quality.</p>
+                <button class="btn">Inspect Infrastructure</button>
+            </a>
+
+            <!-- Learning Environment -->
+            <a href="javascript:void(0)" onclick="selectArea('learning-environment')" class="inspection-card">
+                <div class="inspection-icon">📚</div>
+                <h3>Learning Environment</h3>
+                <p>Evaluate classroom conditions, learning resources, safety, cleanliness, and overall learning atmosphere.</p>
+                <button class="btn">Inspect Environment</button>
+            </a>
+
+            <!-- Teaching Quality -->
+            <a href="javascript:void(0)" onclick="selectArea('teaching-quality')" class="inspection-card">
+                <div class="inspection-icon">👨‍🏫</div>
+                <h3>Teaching Quality</h3>
+                <p>Assess teacher qualifications, teaching methods, lesson planning, and instructional effectiveness.</p>
+                <button class="btn">Inspect Teaching</button>
+            </a>
+
+            <!-- Community Engagement -->
+            <a href="javascript:void(0)" onclick="selectArea('community-engagement')" class="inspection-card">
+                <div class="inspection-icon">👥</div>
+                <h3>Community Engagement</h3>
+                <p>Review parent involvement, community partnerships, communication, and stakeholder participation.</p>
+                <button class="btn">Inspect Engagement</button>
+            </a>
+
+            <!-- Student Performance -->
+            <a href="javascript:void(0)" onclick="selectArea('student-performance')" class="inspection-card">
+                <div class="inspection-icon">📊</div>
+                <h3>Student Performance</h3>
+                <p>Analyze academic results, attendance, behavior, and longitudinal performance trends across years.</p>
+                <button class="btn">Inspect Performance</button>
+            </a>
+        </div>
+
+        <!-- Admin Section (Only visible to Admin users) -->
+        <div id="adminSection" class="admin-section" style="display: none;">
+            <div class="admin-card">
+                <h3>⚙️ System Administration</h3>
+                <div class="admin-actions">
+                    <button class="btn-admin" onclick="window.location.href='/dashboard.html'">
+                        📊 Full Dashboard
+                    </button>
+                    <button class="btn-admin" onclick="window.location.href='/create-user.html'">
+                        👥 Create User
+                    </button>
+                    <button class="btn-admin" onclick="manageData()">
+                        📁 Manage Data
+                    </button>
+                    <button class="btn-admin" onclick="viewAuditLogs()">
+                        📋 Audit Logs
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let authToken = localStorage.getItem('token');
+        let userRole = localStorage.getItem('role');
+
+        // Check authentication
+        if (!authToken) {
+            window.location.href = '/login.html';
+        }
+
+        // Display user info
+        document.addEventListener('DOMContentLoaded', () => {
+            const roleElement = document.getElementById('userRole');
+            if (roleElement && userRole) {
+                roleElement.textContent = userRole;
+            }
+
+            // Show admin section if user is admin
+            if (userRole === 'Admin') {
+                document.getElementById('adminSection').style.display = 'block';
+            }
+        });
+
+        function selectArea(area) {
+            // Store selected area
+            localStorage.setItem('selectedInspectionArea', area);
+            
+            // For now, all areas go to the dashboard
+            // In the future, each area can have its own specialized page
+            if (area === 'student-performance') {
+                window.location.href = '/dashboard.html';
+            } else {
+                // Show coming soon message for other areas
+                alert(`${area.replace('-', ' ').toUpperCase()} inspection module is under development.\n\nCurrently, only Student Performance analysis is available.`);
+            }
+        }
+
+        function logout() {
+            fetch(`${API_BASE}/auth/logout`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            })
+            .then(() => {
+                localStorage.removeItem('token');
+                localStorage.removeItem('role');
+                localStorage.removeItem('username');
+                localStorage.removeItem('selectedInspectionArea');
+                window.location.href = '/';
+            })
+            .catch(err => {
+                console.error('Logout error:', err);
+                localStorage.removeItem('token');
+                localStorage.removeItem('role');
+                localStorage.removeItem('username');
+                localStorage.removeItem('selectedInspectionArea');
+                window.location.href = '/';
+            });
+        }
+
+        function manageData() {
+            window.location.href = '/dashboard.html#admin';
+        }
+
+        function viewAuditLogs() {
+            alert('Audit logs viewer will open in a new window.');
+            // This can be implemented later
+        }
+    </script>
+</body>
+</html>

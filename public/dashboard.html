@@ -514,7 +514,12 @@
 <body>
     <div class="header">
         <div class="header-content">
-            <h1>📊 Longitudinal Inspection Dashboard</h1>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <button class="btn-logout" onclick="window.location.href='/inspection-areas.html'" style="background: rgba(255,255,255,0.2);" title="Back to Inspection Areas">
+                    ← Back
+                </button>
+                <h1>📊 Student Performance Analysis</h1>
+            </div>
             <div class="user-info">
                 <button class="btn-logout" onclick="loadDashboardData()" style="background: rgba(255,255,255,0.2); margin-right: 0.5rem;" title="Refresh Dashboard">
                     🔄 Refresh

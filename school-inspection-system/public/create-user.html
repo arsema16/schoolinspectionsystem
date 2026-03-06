@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create User - Admin Only</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .create-user-box {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 450px;
+    }
+
+    .create-user-box h2 {
+      color: #667eea;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 0.8rem;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .btn-create {
+      width: 100%;
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 1rem;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 1rem;
+    }
+
+    .btn-create:hover {
+      background: #5568d3;
+    }
+
+    .btn-back {
+      width: 100%;
+      background: transparent;
+      color: #667eea;
+      border: 2px solid #667eea;
+      padding: 0.8rem;
+      border-radius: 5px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 0.5rem;
+    }
+
+    .btn-back:hover {
+      background: #667eea;
+      color: white;
+    }
+
+    #message {
+      margin-top: 1rem;
+      padding: 0.8rem;
+      border-radius: 5px;
+      text-align: center;
+      display: none;
+    }
+
+    #message.success {
+      background: #d4edda;
+      color: #155724;
+      display: block;
+    }
+
+    #message.error {
+      background: #f8d7da;
+      color: #721c24;
+      display: block;
+    }
+
+    .role-info {
+      background: #f8f9fa;
+      padding: 0.8rem;
+      border-radius: 5px;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="create-user-box">
+    <h2>👥 Create New User</h2>
+    
+    <div class="role-info">
+      <strong>Admin Only:</strong> Create new user accounts with specific roles.
+    </div>
+
+    <form id="createUserForm" onsubmit="createUser(event)">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" placeholder="Enter username" required minlength="3">
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter password" required minlength="6">
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" id="confirmPassword" placeholder="Confirm password" required>
+      </div>
+
+      <div class="form-group">
+        <label for="role">Role</label>
+        <select id="role" required>
+          <option value="">Select Role</option>
+          <option value="Inspector">Inspector</option>
+          <option value="Admin">Admin</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn-create">Create User</button>
+      <button type="button" class="btn-back" onclick="goBack()">Back to Dashboard</button>
+    </form>
+
+    <div id="message"></div>
+  </div>
+
+  <script>
+    const authToken = localStorage.getItem('token');
+    const userRole = localStorage.getItem('role');
+
+    // Check if user is authenticated and is admin
+    if (!authToken) {
+      window.location.href = '/login.html';
+    }
+
+    if (userRole !== 'Admin') {
+      alert('Access Denied: Admin privileges required');
+      window.location.href = '/dashboard.html';
+    }
+
+    async function createUser(event) {
+      event.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const role = document.getElementById('role').value;
+      const messageDiv = document.getElementById('message');
+
+      // Validation
+      if (password !== confirmPassword) {
+        showMessage('Passwords do not match', 'error');
+        return;
+      }
+
+      if (password.length < 6) {
+        showMessage('Password must be at least 6 characters', 'error');
+        return;
+      }
+
+      if (!role) {
+        showMessage('Please select a role', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          },
+          body: JSON.stringify({
+            username: username,
+            password: password,
+            role: role
+          })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          showMessage(`User "${username}" created successfully as ${role}!`, 'success');
+          document.getElementById('createUserForm').reset();
+          
+          // Redirect back to dashboard after 2 seconds
+          setTimeout(() => {
+            window.location.href = '/dashboard.html';
+          }, 2000);
+        } else {
+          showMessage(data.message || 'Failed to create user', 'error');
+        }
+      } catch (error) {
+        console.error('Create user error:', error);
+        showMessage('Error connecting to server: ' + error.message, 'error');
+      }
+    }
+
+    function showMessage(text, type) {
+      const messageDiv = document.getElementById('message');
+      messageDiv.textContent = text;
+      messageDiv.className = type;
+    }
+
+    function goBack() {
+      window.location.href = '/dashboard.html';
+    }
+  </script>
+</body>
+</html>

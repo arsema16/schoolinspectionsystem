@@ -10,16 +10,18 @@ if (!authToken) {
     window.location.href = '/login.html';
 }
 
+// Debug logging
+console.log('=== Infrastructure Page Loaded ===');
+console.log('Auth Token:', authToken ? 'Present' : 'Missing');
+console.log('User Role:', userRole);
+console.log('Role Type:', typeof userRole);
+
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM Content Loaded');
     console.log('Page loaded, user role:', userRole);
     displayUserInfo();
     showAdminElements();
-    
-    // Force clear old data and load fresh (temporary for testing)
-    // Remove this line after first load if you want to keep your data
-    // localStorage.removeItem('schoolFacilities');
-    
     loadFacilities();
 });
 
@@ -33,23 +35,35 @@ function displayUserInfo() {
 
 // Show admin-only elements
 function showAdminElements() {
-    if (userRole === 'Admin') {
-        const adminElements = document.querySelectorAll('.admin-only');
-        adminElements.forEach(el => {
-            if (el.tagName === 'TH' || el.tagName === 'TD') {
-                el.style.display = 'table-cell';
-            } else if (el.tagName === 'BUTTON') {
-                el.style.display = 'inline-block';
-            } else {
-                el.style.display = 'block';
-            }
-        });
+    const isAdmin = (userRole === 'Admin');
+    console.log('=== Show Admin Elements ===');
+    console.log('Is Admin:', isAdmin);
+    
+    if (isAdmin) {
+        // Show Add Facility button
+        const addButton = document.querySelector('.btn-add');
+        if (addButton) {
+            addButton.style.display = 'inline-block';
+            console.log('Add button shown');
+        }
+        
+        // Show Actions column header
+        const actionsHeader = document.querySelector('th.admin-only');
+        if (actionsHeader) {
+            actionsHeader.style.display = 'table-cell';
+            console.log('Actions header shown');
+        }
     } else {
-        // Hide admin elements for non-admin users
-        const adminElements = document.querySelectorAll('.admin-only');
-        adminElements.forEach(el => {
-            el.style.display = 'none';
-        });
+        // Hide admin elements
+        const addButton = document.querySelector('.btn-add');
+        if (addButton) {
+            addButton.style.display = 'none';
+        }
+        
+        const actionsHeader = document.querySelector('th.admin-only');
+        if (actionsHeader) {
+            actionsHeader.style.display = 'none';
+        }
     }
 }
 
@@ -155,6 +169,26 @@ function saveFacilitiesToStorage() {
 
 // Check if facility meets standards
 function checkCompliance(facility) {
+    // Ensure facility has a type, assign default based on name if missing
+    if (!facility.type) {
+        const name = facility.name.toLowerCase();
+        if (name.includes('library') && name.includes('it')) {
+            facility.type = 'computer-lab';
+        } else if (name.includes('library')) {
+            facility.type = 'library';
+        } else if (name.includes('lab')) {
+            facility.type = 'laboratory';
+        } else if (name.includes('class')) {
+            facility.type = 'classroom';
+        } else if (name.includes('office')) {
+            facility.type = 'office';
+        } else if (name.includes('staff')) {
+            facility.type = 'staff';
+        } else {
+            facility.type = 'special';
+        }
+    }
+
     const standards = getStandards();
     const standard = standards[facility.type] || standards.special;
     const issues = [];
@@ -182,7 +216,7 @@ function checkCompliance(facility) {
     }
 
     // Check computers for computer lab
-    if (facility.type === 'computer-lab' && standard.computersPerStudent) {
+    if (facility.type === 'computer-lab' && standard.computersPerStudent && facility.capacity) {
         const requiredComputers = Math.ceil(facility.capacity * standard.computersPerStudent);
         if (facility.computers < requiredComputers) {
             issues.push(`Not enough computers (${facility.computers} < ${requiredComputers} needed)`);
@@ -196,20 +230,25 @@ function checkCompliance(facility) {
 // Render facilities table
 function renderFacilities() {
     const tbody = document.getElementById('facilitiesBody');
+    const isAdmin = (userRole === 'Admin');
+    
+    console.log('=== Rendering Facilities ===');
+    console.log('Facilities count:', facilities.length);
+    console.log('Is Admin:', isAdmin);
     
     if (facilities.length === 0) {
-        const colspan = userRole === 'Admin' ? '7' : '6';
+        const colspan = isAdmin ? '7' : '6';
         tbody.innerHTML = `
             <tr>
                 <td colspan="${colspan}" style="text-align: center; padding: 2rem; color: #999;">
-                    No facilities found. ${userRole === 'Admin' ? 'Click "Add Facility" to add one.' : ''}
+                    No facilities found. ${isAdmin ? 'Click "Add Facility" to add one.' : ''}
                 </td>
             </tr>
         `;
         return;
     }
 
-    tbody.innerHTML = facilities.map(facility => {
+    const rows = facilities.map(facility => {
         const compliance = checkCompliance(facility);
         
         let complianceHTML = '';
@@ -230,7 +269,7 @@ function renderFacilities() {
             `;
         }
 
-        return `
+        let row = `
         <tr>
             <td><strong>${facility.name}</strong></td>
             <td>${facility.area} ካሬ</td>
@@ -247,20 +286,24 @@ function renderFacilities() {
                 </span>
             </td>
             <td>${facility.computers || 0}</td>
-            <td style="min-width: 200px;">${complianceHTML}</td>
-            ${userRole === 'Admin' ? `
-                <td class="admin-only" style="white-space: nowrap;">
-                    <button class="btn-edit" onclick="editFacility('${facility.id}')">Edit</button>
-                    <button class="btn-delete" onclick="deleteFacility('${facility.id}')">Delete</button>
-                </td>
-            ` : ''}
-        </tr>
-    `;
-    }).join('');
+            <td style="min-width: 200px;">${complianceHTML}</td>`;
+        
+        if (isAdmin) {
+            row += `
+            <td style="white-space: nowrap;">
+                <button class="btn-edit" onclick="editFacility('${facility.id}')">Edit</button>
+                <button class="btn-delete" onclick="deleteFacility('${facility.id}')">Delete</button>
+            </td>`;
+        }
+        
+        row += `</tr>`;
+        return row;
+    });
+    
+    tbody.innerHTML = rows.join('');
     
     console.log('Rendered', facilities.length, 'facilities');
-    console.log('User role:', userRole);
-    console.log('Admin elements should be visible:', userRole === 'Admin');
+    console.log('Admin buttons included:', isAdmin);
 }
 
 // Get condition color

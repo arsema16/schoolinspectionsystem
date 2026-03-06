@@ -312,6 +312,77 @@
         .admin-only {
             display: none;
         }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.2rem;
+            }
+
+            .header-left {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .facilities-table {
+                font-size: 0.85rem;
+            }
+
+            .facilities-table th,
+            .facilities-table td {
+                padding: 0.5rem;
+            }
+
+            /* Make table scrollable on mobile */
+            .facilities-section {
+                overflow-x: auto;
+            }
+
+            .facilities-table {
+                min-width: 800px;
+            }
+
+            .btn-edit, .btn-delete {
+                padding: 0.3rem 0.6rem;
+                font-size: 0.75rem;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .page-header h2 {
+                font-size: 1.5rem;
+            }
+
+            .stat-value {
+                font-size: 2rem;
+            }
+        }
     </style>
 </head>
 <body>

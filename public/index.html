@@ -1,16 +1,135 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Academic Intelligence Report</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Inspection System</title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: white;
+        }
+
+        .landing-container {
+            text-align: center;
+            max-width: 600px;
+            padding: 2rem;
+        }
+
+        .landing-container h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .landing-container p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .features {
+            margin-top: 3rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature {
+            background: rgba(255,255,255,0.1);
+            padding: 1.5rem;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-desc {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+    </style>
 </head>
 <body>
+    <div class="landing-container">
+        <h1>📊 School Inspection System</h1>
+        <p>Longitudinal Academic Performance Analysis & Intelligence Platform</p>
+        
+        <div class="btn-group">
+            <a href="/login.html" class="btn">Login</a>
+        </div>
 
-<h1>Academic Intelligence Report</h1>
-<button onclick="loadReport()">Generate Report</button>
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">📈</div>
+                <div class="feature-title">Performance Trends</div>
+                <div class="feature-desc">Track student performance over time</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🚩</div>
+                <div class="feature-title">Red Flag Detection</div>
+                <div class="feature-desc">Identify at-risk students early</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔮</div>
+                <div class="feature-title">Predictions</div>
+                <div class="feature-desc">AI-powered performance forecasting</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📄</div>
+                <div class="feature-title">Reports</div>
+                <div class="feature-desc">Generate comprehensive PDF reports</div>
+            </div>
+        </div>
+    </div>
 
-<div id="report"></div>
-
-<script src="js/app.js"></script>
+    <script>
+        // Auto-redirect if already logged in
+        const token = localStorage.getItem('token');
+        if (token) {
+            window.location.href = '/dashboard.html';
+        }
+    </script>
 </body>
 </html>

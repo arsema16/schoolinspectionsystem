@@ -569,17 +569,18 @@
         <div class="facilities-section">
             <div class="section-header">
                 <h3>📚 Library Books Inventory</h3>
-                <div style="display: flex; gap: 1rem; align-items: center;">
+                <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
                     <input type="text" id="bookSearch" placeholder="Search books..." style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px; width: 250px;">
                     <select id="categoryFilter" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
                         <option value="">All Categories</option>
                     </select>
+                    <button class="btn-add admin-only" onclick="showAddBookModal()" style="display: none;">+ Add Book</button>
                 </div>
             </div>
 
             <div style="margin-bottom: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 5px;">
                 <strong>Total Books: <span id="totalBooks">1,992</span></strong> | 
-                <strong>Categories: <span id="totalCategories">17</span></strong>
+                <strong>Categories: <span id="totalCategories">25</span></strong>
             </div>
 
             <table class="facilities-table">
@@ -589,11 +590,12 @@
                         <th>Title</th>
                         <th>Copies</th>
                         <th>Code</th>
+                        <th class="admin-only" style="display: none;">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="booksBody">
                     <tr>
-                        <td colspan="4" style="text-align: center; padding: 2rem; color: #999;">
+                        <td colspan="5" style="text-align: center; padding: 2rem; color: #999;">
                             Loading library books...
                         </td>
                     </tr>
@@ -664,6 +666,64 @@
                 </div>
 
                 <button type="submit" class="btn-submit">Save Facility</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Book Modal -->
+    <div id="bookModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="bookModalTitle">Add Book</h3>
+                <span class="close" onclick="closeBookModal()">&times;</span>
+            </div>
+            <form id="bookForm" onsubmit="saveBook(event)">
+                <input type="hidden" id="bookIndex">
+                
+                <div class="form-group">
+                    <label for="bookCategory">Category *</label>
+                    <select id="bookCategory" required>
+                        <option value="">Select category</option>
+                        <option value="English">English</option>
+                        <option value="English Fiction">English Fiction</option>
+                        <option value="Amharic Language">Amharic Language</option>
+                        <option value="Amharic Fiction">Amharic Fiction</option>
+                        <option value="Amharic Poetry">Amharic Poetry</option>
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Biology">Biology</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Geography">Geography</option>
+                        <option value="History">History</option>
+                        <option value="Civics">Civics</option>
+                        <option value="Dictionaries">Dictionaries</option>
+                        <option value="Encyclopedia">Encyclopedia</option>
+                        <option value="Generalities">Generalities</option>
+                        <option value="Economics">Economics</option>
+                        <option value="IT">IT</option>
+                        <option value="Psychology">Psychology</option>
+                        <option value="Spiritual Books">Spiritual Books</option>
+                        <option value="Ethiopian Regulations">Ethiopian Regulations</option>
+                        <option value="Student Textbooks">Student Textbooks</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="bookTitle">Book Title *</label>
+                    <input type="text" id="bookTitle" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="bookCopies">Number of Copies *</label>
+                    <input type="number" id="bookCopies" min="1" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="bookCode">Book Code</label>
+                    <input type="text" id="bookCode" placeholder="Optional">
+                </div>
+
+                <button type="submit" class="btn-submit">Save Book</button>
             </form>
         </div>
     </div>

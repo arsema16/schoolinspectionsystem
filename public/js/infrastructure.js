@@ -479,39 +479,50 @@ let filteredBooks = [];
 
 async function loadLibraryBooks() {
     try {
-        const response = await fetch('/data/library-books.json');
-        const data = await response.json();
+        // Try to load from localStorage first
+        const storedBooks = localStorage.getItem('libraryBooks');
         
-        // Flatten the books data with category information
-        libraryBooks = [];
-        data.categories.forEach(category => {
-            category.books.forEach(book => {
-                libraryBooks.push({
-                    category: category.name,
-                    title: book.title,
-                    copies: book.copies,
-                    code: book.code
+        if (storedBooks) {
+            libraryBooks = JSON.parse(storedBooks);
+            console.log('Loaded books from localStorage:', libraryBooks.length);
+        } else {
+            // Load from JSON file
+            const response = await fetch('/data/library-books.json');
+            const data = await response.json();
+            
+            // Flatten the books data with category information
+            libraryBooks = [];
+            data.categories.forEach(category => {
+                category.books.forEach(book => {
+                    libraryBooks.push({
+                        category: category.name,
+                        title: book.title,
+                        copies: book.copies,
+                        code: book.code
+                    });
                 });
             });
-        });
+            
+            // Save to localStorage
+            saveBooksToStorage();
+        }
         
         filteredBooks = [...libraryBooks];
         
         // Populate category filter
-        populateCategoryFilter(data.categories);
+        populateCategoryFilter();
         
         // Render books
         renderBooks();
         
         // Update totals
-        document.getElementById('totalBooks').textContent = data.totalBooks.toLocaleString();
-        document.getElementById('totalCategories').textContent = data.totalCategories;
+        updateBookTotals();
         
     } catch (error) {
         console.error('Error loading library books:', error);
         document.getElementById('booksBody').innerHTML = `
             <tr>
-                <td colspan="4" style="text-align: center; padding: 2rem; color: #dc3545;">
+                <td colspan="5" style="text-align: center; padding: 2rem; color: #dc3545;">
                     Error loading library books
                 </td>
             </tr>
@@ -519,23 +530,42 @@ async function loadLibraryBooks() {
     }
 }
 
-function populateCategoryFilter(categories) {
+function saveBooksToStorage() {
+    localStorage.setItem('libraryBooks', JSON.stringify(libraryBooks));
+}
+
+function populateCategoryFilter() {
     const categoryFilter = document.getElementById('categoryFilter');
+    const categories = [...new Set(libraryBooks.map(book => book.category))].sort();
+    
+    // Clear existing options except "All Categories"
+    categoryFilter.innerHTML = '<option value="">All Categories</option>';
+    
     categories.forEach(category => {
+        const count = libraryBooks.filter(b => b.category === category).length;
         const option = document.createElement('option');
-        option.value = category.name;
-        option.textContent = `${category.name} (${category.books.length})`;
+        option.value = category;
+        option.textContent = `${category} (${count})`;
         categoryFilter.appendChild(option);
     });
 }
 
+function updateBookTotals() {
+    const totalBooks = libraryBooks.reduce((sum, book) => sum + parseInt(book.copies), 0);
+    const totalCategories = [...new Set(libraryBooks.map(book => book.category))].length;
+    
+    document.getElementById('totalBooks').textContent = totalBooks.toLocaleString();
+    document.getElementById('totalCategories').textContent = totalCategories;
+}
+
 function renderBooks() {
     const booksBody = document.getElementById('booksBody');
+    const isAdmin = localStorage.getItem('userRole') === 'Admin';
     
     if (filteredBooks.length === 0) {
         booksBody.innerHTML = `
             <tr>
-                <td colspan="4" style="text-align: center; padding: 2rem; color: #999;">
+                <td colspan="${isAdmin ? '5' : '4'}" style="text-align: center; padding: 2rem; color: #999;">
                     No books found
                 </td>
             </tr>
@@ -543,14 +573,28 @@ function renderBooks() {
         return;
     }
     
-    booksBody.innerHTML = filteredBooks.map(book => `
-        <tr>
-            <td>${book.category}</td>
-            <td>${book.title}</td>
-            <td>${book.copies}</td>
-            <td>${book.code || '-'}</td>
-        </tr>
-    `).join('');
+    booksBody.innerHTML = filteredBooks.map((book, index) => {
+        const actualIndex = libraryBooks.findIndex(b => 
+            b.category === book.category && 
+            b.title === book.title && 
+            b.code === book.code
+        );
+        
+        return `
+            <tr>
+                <td>${book.category}</td>
+                <td>${book.title}</td>
+                <td>${book.copies}</td>
+                <td>${book.code || '-'}</td>
+                ${isAdmin ? `
+                    <td>
+                        <button class="btn-edit" onclick="editBook(${actualIndex})">Edit</button>
+                        <button class="btn-delete" onclick="deleteBook(${actualIndex})">Delete</button>
+                    </td>
+                ` : ''}
+            </tr>
+        `;
+    }).join('');
 }
 
 function filterBooks() {
@@ -568,6 +612,78 @@ function filterBooks() {
     
     renderBooks();
 }
+
+function showAddBookModal() {
+    document.getElementById('bookModalTitle').textContent = 'Add Book';
+    document.getElementById('bookForm').reset();
+    document.getElementById('bookIndex').value = '';
+    document.getElementById('bookModal').style.display = 'block';
+}
+
+function editBook(index) {
+    const book = libraryBooks[index];
+    
+    document.getElementById('bookModalTitle').textContent = 'Edit Book';
+    document.getElementById('bookIndex').value = index;
+    document.getElementById('bookCategory').value = book.category;
+    document.getElementById('bookTitle').value = book.title;
+    document.getElementById('bookCopies').value = book.copies;
+    document.getElementById('bookCode').value = book.code;
+    
+    document.getElementById('bookModal').style.display = 'block';
+}
+
+function deleteBook(index) {
+    const book = libraryBooks[index];
+    
+    if (confirm(`Are you sure you want to delete "${book.title}"?`)) {
+        libraryBooks.splice(index, 1);
+        saveBooksToStorage();
+        populateCategoryFilter();
+        updateBookTotals();
+        filterBooks();
+        alert('Book deleted successfully!');
+    }
+}
+
+function saveBook(event) {
+    event.preventDefault();
+    
+    const index = document.getElementById('bookIndex').value;
+    const book = {
+        category: document.getElementById('bookCategory').value,
+        title: document.getElementById('bookTitle').value,
+        copies: parseInt(document.getElementById('bookCopies').value),
+        code: document.getElementById('bookCode').value
+    };
+    
+    if (index === '') {
+        // Add new book
+        libraryBooks.push(book);
+        alert('Book added successfully!');
+    } else {
+        // Update existing book
+        libraryBooks[parseInt(index)] = book;
+        alert('Book updated successfully!');
+    }
+    
+    saveBooksToStorage();
+    populateCategoryFilter();
+    updateBookTotals();
+    filterBooks();
+    closeBookModal();
+}
+
+function closeBookModal() {
+    document.getElementById('bookModal').style.display = 'none';
+}
+
+// Make functions globally accessible
+window.showAddBookModal = showAddBookModal;
+window.editBook = editBook;
+window.deleteBook = deleteBook;
+window.saveBook = saveBook;
+window.closeBookModal = closeBookModal;
 
 // Add event listeners for search and filter
 document.addEventListener('DOMContentLoaded', function() {

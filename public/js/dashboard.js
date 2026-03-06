@@ -868,11 +868,21 @@ window.addEventListener('unhandledrejection', (event) => {
 
 // Show admin section if user is admin
 function showAdminSection() {
+    console.log('Checking admin access. User role:', userRole);
+    console.log('Role type:', typeof userRole);
+    console.log('Comparison result (userRole === "Admin"):', userRole === 'Admin');
+    
     if (userRole === 'Admin') {
+        console.log('User is Admin, showing admin section');
         const adminSection = document.getElementById('adminSection');
         if (adminSection) {
             adminSection.style.display = 'block';
+            console.log('Admin section displayed');
+        } else {
+            console.error('Admin section element not found');
         }
+    } else {
+        console.log('User is not Admin, role is:', userRole);
     }
 }
 

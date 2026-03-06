@@ -31,9 +31,15 @@ async function login() {
     }
 
     const data = await res.json();
+    console.log("Login response:", data);
+    console.log("Role from server:", data.role);
+    
     localStorage.setItem("token", data.token);
     localStorage.setItem("role", data.role);
     localStorage.setItem("username", data.username);
+    
+    console.log("Saved to localStorage - role:", localStorage.getItem("role"));
+    
     window.location.href = "dashboard.html";
   } catch (error) {
     console.error("Login error:", error);

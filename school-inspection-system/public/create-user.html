@@ -40,8 +40,7 @@
       font-weight: 500;
     }
 
-    .form-group input,
-    .form-group select {
+    .form-group input {
       width: 100%;
       padding: 0.8rem;
       border: 1px solid #ddd;
@@ -50,27 +49,33 @@
       box-sizing: border-box;
     }
 
-    .form-group input:focus,
-    .form-group select:focus {
+    .form-group input:focus {
       outline: none;
       border-color: #667eea;
     }
 
-    .btn-create {
-      width: 100%;
-      background: #667eea;
-      color: white;
-      border: none;
+    .role-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn-role {
       padding: 1rem;
+      border: 2px solid #667eea;
+      background: white;
+      color: #667eea;
       border-radius: 5px;
       font-size: 1rem;
       cursor: pointer;
       transition: all 0.3s;
-      margin-top: 1rem;
+      font-weight: 600;
     }
 
-    .btn-create:hover {
-      background: #5568d3;
+    .btn-role:hover {
+      background: #667eea;
+      color: white;
     }
 
     .btn-back {
@@ -83,7 +88,7 @@
       font-size: 0.9rem;
       cursor: pointer;
       transition: all 0.3s;
-      margin-top: 0.5rem;
+      margin-top: 1rem;
     }
 
     .btn-back:hover {
@@ -119,6 +124,13 @@
       font-size: 0.85rem;
       color: #666;
     }
+
+    .role-label {
+      text-align: center;
+      margin-bottom: 0.5rem;
+      color: #333;
+      font-weight: 500;
+    }
   </style>
 </head>
 <body>
@@ -126,10 +138,10 @@
     <h2>👥 Create New User</h2>
     
     <div class="role-info">
-      <strong>Admin Only:</strong> Create new user accounts with specific roles.
+      <strong>Admin Only:</strong> Create new user accounts.
     </div>
 
-    <form id="createUserForm" onsubmit="createUser(event)">
+    <form id="createUserForm">
       <div class="form-group">
         <label for="username">Username</label>
         <input type="text" id="username" placeholder="Enter username" required minlength="3">
@@ -145,16 +157,16 @@
         <input type="password" id="confirmPassword" placeholder="Confirm password" required>
       </div>
 
-      <div class="form-group">
-        <label for="role">Role</label>
-        <select id="role" required>
-          <option value="">Select Role</option>
-          <option value="Inspector">Inspector</option>
-          <option value="Admin">Admin</option>
-        </select>
+      <div class="role-label">Create user as:</div>
+      <div class="role-buttons">
+        <button type="button" class="btn-role" onclick="createUser('Inspector')">
+          👁️ Inspector
+        </button>
+        <button type="button" class="btn-role" onclick="createUser('Admin')">
+          ⚙️ Admin
+        </button>
       </div>
 
-      <button type="submit" class="btn-create">Create User</button>
       <button type="button" class="btn-back" onclick="goBack()">Back to Dashboard</button>
     </form>
 
@@ -175,16 +187,23 @@
       window.location.href = '/dashboard.html';
     }
 
-    async function createUser(event) {
-      event.preventDefault();
-      
+    async function createUser(role) {
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
-      const role = document.getElementById('role').value;
       const messageDiv = document.getElementById('message');
 
       // Validation
+      if (!username || !password || !confirmPassword) {
+        showMessage('Please fill in all fields', 'error');
+        return;
+      }
+
+      if (username.length < 3) {
+        showMessage('Username must be at least 3 characters', 'error');
+        return;
+      }
+
       if (password !== confirmPassword) {
         showMessage('Passwords do not match', 'error');
         return;
@@ -192,11 +211,6 @@
 
       if (password.length < 6) {
         showMessage('Password must be at least 6 characters', 'error');
-        return;
-      }
-
-      if (!role) {
-        showMessage('Please select a role', 'error');
         return;
       }
 

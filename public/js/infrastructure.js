@@ -211,13 +211,24 @@ function renderFacilities() {
 
     tbody.innerHTML = facilities.map(facility => {
         const compliance = checkCompliance(facility);
-        const complianceIcon = compliance.compliant 
-            ? '<span style="color: #28a745; font-size: 1.2rem;" title="Meets standards">✓</span>'
-            : '<span style="color: #dc3545; font-size: 1.2rem;" title="Below standards">✗</span>';
         
-        const complianceTitle = compliance.compliant 
-            ? 'Meets educational standards'
-            : compliance.issues.join('; ');
+        let complianceHTML = '';
+        if (compliance.compliant) {
+            complianceHTML = `
+                <div style="color: #28a745;">
+                    <strong>✓ Meets Standards</strong>
+                </div>
+            `;
+        } else {
+            complianceHTML = `
+                <div style="color: #dc3545;">
+                    <strong>✗ Below Standards</strong><br>
+                    <small style="color: #666;">
+                        ${compliance.issues.map(issue => `• ${issue}`).join('<br>')}
+                    </small>
+                </div>
+            `;
+        }
 
         return `
         <tr>
@@ -236,9 +247,9 @@ function renderFacilities() {
                 </span>
             </td>
             <td>${facility.computers || 0}</td>
-            <td title="${complianceTitle}">${complianceIcon}</td>
+            <td style="min-width: 200px;">${complianceHTML}</td>
             ${userRole === 'Admin' ? `
-                <td class="admin-only">
+                <td class="admin-only" style="white-space: nowrap;">
                     <button class="btn-edit" onclick="editFacility('${facility.id}')">Edit</button>
                     <button class="btn-delete" onclick="deleteFacility('${facility.id}')">Delete</button>
                 </td>
@@ -248,6 +259,8 @@ function renderFacilities() {
     }).join('');
     
     console.log('Rendered', facilities.length, 'facilities');
+    console.log('User role:', userRole);
+    console.log('Admin elements should be visible:', userRole === 'Admin');
 }
 
 // Get condition color
@@ -307,6 +320,7 @@ function editFacility(id) {
     document.getElementById('modalTitle').textContent = 'Edit Facility';
     document.getElementById('facilityId').value = facility.id;
     document.getElementById('facilityName').value = facility.name;
+    document.getElementById('facilityType').value = facility.type || 'special';
     document.getElementById('facilityArea').value = facility.area;
     document.getElementById('facilityCapacity').value = facility.capacity || '';
     document.getElementById('facilityCondition').value = facility.condition;
@@ -341,6 +355,7 @@ function saveFacility(event) {
     const facilityData = {
         id: id || Date.now().toString(),
         name: document.getElementById('facilityName').value,
+        type: document.getElementById('facilityType').value,
         area: parseFloat(document.getElementById('facilityArea').value),
         capacity: parseInt(document.getElementById('facilityCapacity').value) || null,
         condition: document.getElementById('facilityCondition').value,

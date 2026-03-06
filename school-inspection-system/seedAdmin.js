@@ -6,18 +6,33 @@ const connectDB = require("./config/db");
 connectDB();
 
 async function createAdmin() {
-    const hashedPassword = await bcrypt.hash("123456", 10);
+    try {
+        // Check if admin already exists
+        const existingAdmin = await User.findOne({ username: "admin" });
+        
+        if (existingAdmin) {
+            console.log("Admin user already exists!");
+            mongoose.connection.close();
+            return;
+        }
 
-    const admin = new User({
-        fullName: "Admin",
-        email: "admin@gmail.com",
-        password: hashedPassword,
-        role: "admin"
-    });
+        const hashedPassword = await bcrypt.hash("admin1234", 10);
 
-    await admin.save();
-    console.log("Admin user created!");
-    mongoose.connection.close();
+        const admin = new User({
+            username: "admin",
+            password: hashedPassword,
+            role: "Admin"
+        });
+
+        await admin.save();
+        console.log("Admin user created successfully!");
+        console.log("Username: admin");
+        console.log("Password: admin1234");
+        mongoose.connection.close();
+    } catch (error) {
+        console.error("Error creating admin:", error);
+        mongoose.connection.close();
+    }
 }
 
 createAdmin();

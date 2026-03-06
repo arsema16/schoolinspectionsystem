@@ -984,7 +984,8 @@ async function uploadStudentData() {
 
 async function showStudentManager() {
     try {
-        const response = await fetch(`${API_BASE}/students?limit=100`, {
+        // Fetch all students without limit
+        const response = await fetch(`${API_BASE}/students?limit=10000`, {
             headers: {
                 'Authorization': `Bearer ${authToken}`
             }
@@ -998,6 +999,8 @@ async function showStudentManager() {
         if (!response.ok) throw new Error('Failed to load students');
         
         const data = await response.json();
+        
+        console.log('Loaded students:', data.students.length, 'Total in DB:', data.total);
         
         // Create a new window with student list
         const newWindow = window.open('', 'Student Manager', 'width=1200,height=600');
@@ -1029,17 +1032,31 @@ async function showStudentManager() {
                         padding: 10px;
                         background: #f8f9fa;
                         border-radius: 5px;
+                        display: flex;
+                        gap: 10px;
+                        flex-wrap: wrap;
+                        align-items: center;
                     }
                     .filter-bar select, .filter-bar input {
                         padding: 5px 10px;
-                        margin-right: 10px;
                         border: 1px solid #ddd;
                         border-radius: 3px;
+                    }
+                    .stats {
+                        background: #e7f3ff;
+                        padding: 10px;
+                        border-radius: 5px;
+                        margin-bottom: 10px;
+                        color: #004085;
                     }
                 </style>
             </head>
             <body>
-                <h2>Student Records (${data.students.length} students)</h2>
+                <h2>Student Records</h2>
+                <div class="stats">
+                    <strong>Total in Database:</strong> ${data.total} students | 
+                    <strong>Showing:</strong> <span id="visibleCount">${data.students.length}</span> students
+                </div>
                 <div class="filter-bar">
                     <select id="filterYear" onchange="filterTable()">
                         <option value="">All Years</option>
@@ -1056,6 +1073,7 @@ async function showStudentManager() {
                         <option value="12">Grade 12</option>
                     </select>
                     <input type="text" id="searchName" placeholder="Search by name..." onkeyup="filterTable()" />
+                    <button onclick="clearFilters()" style="padding: 5px 15px; background: #6c757d; color: white; border: none; border-radius: 3px; cursor: pointer;">Clear Filters</button>
                 </div>
                 <table id="studentTable">
                     <thead>
@@ -1076,10 +1094,10 @@ async function showStudentManager() {
                                 <td>${s.name}</td>
                                 <td>${s.gradeLevel}</td>
                                 <td>${s.year}</td>
-                                <td>${s.gender}</td>
+                                <td>${s.gender || 'N/A'}</td>
                                 <td>${s.age || 'N/A'}</td>
                                 <td>
-                                    <button class="btn-delete" onclick="deleteStudent('${s._id}', '${s.name}')">Delete</button>
+                                    <button class="btn-delete" onclick="deleteStudent('${s._id}', '${s.name.replace(/'/g, "\\'")}')">Delete</button>
                                 </td>
                             </tr>
                         `).join('')}
@@ -1095,6 +1113,7 @@ async function showStudentManager() {
                         const searchName = document.getElementById('searchName').value.toLowerCase();
                         const rows = document.querySelectorAll('#studentTable tbody tr');
                         
+                        let visibleCount = 0;
                         rows.forEach(row => {
                             const year = row.dataset.year;
                             const grade = row.dataset.grade;
@@ -1106,10 +1125,20 @@ async function showStudentManager() {
                             
                             if (yearMatch && gradeMatch && nameMatch) {
                                 row.style.display = '';
+                                visibleCount++;
                             } else {
                                 row.style.display = 'none';
                             }
                         });
+                        
+                        document.getElementById('visibleCount').textContent = visibleCount;
+                    }
+                    
+                    function clearFilters() {
+                        document.getElementById('filterYear').value = '';
+                        document.getElementById('filterGrade').value = '';
+                        document.getElementById('searchName').value = '';
+                        filterTable();
                     }
                     
                     async function deleteStudent(id, name) {
@@ -1138,9 +1167,10 @@ async function showStudentManager() {
                                 row.remove();
                             }
                             
-                            // Update count
-                            const count = document.querySelectorAll('#studentTable tbody tr').length;
-                            document.querySelector('h2').textContent = 'Student Records (' + count + ' students)';
+                            // Update counts
+                            const totalCount = document.querySelectorAll('#studentTable tbody tr').length;
+                            document.querySelector('.stats').innerHTML = '<strong>Total in Database:</strong> ' + (totalCount) + ' students | <strong>Showing:</strong> <span id="visibleCount">' + totalCount + '</span> students';
+                            filterTable();
                             
                             // Notify parent window to refresh dashboard
                             if (window.opener && !window.opener.closed) {
@@ -1158,7 +1188,7 @@ async function showStudentManager() {
         
     } catch (error) {
         console.error('Error loading students:', error);
-        alert('Failed to load student records');
+        alert('Failed to load student records: ' + error.message);
     }
 }
 

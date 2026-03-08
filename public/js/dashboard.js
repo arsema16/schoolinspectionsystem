@@ -1143,7 +1143,7 @@ async function showStudentManager() {
 
 async function showUserList() {
     try {
-        const response = await fetch(`${API_BASE}/auth/users`, {
+        const response = await fetch(`${API_BASE}/users`, {
             headers: {
                 'Authorization': `Bearer ${authToken}`
             }

@@ -143,6 +143,15 @@
         <input type="password" id="confirmPassword" placeholder="Confirm password" required>
       </div>
 
+      <div class="form-group">
+        <label for="role">Role</label>
+        <select id="role" required style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; box-sizing: border-box;">
+          <option value="">Select role...</option>
+          <option value="Inspector">Inspector</option>
+          <option value="Admin">Admin</option>
+        </select>
+      </div>
+
       <button type="submit" class="btn-create">Create User</button>
       <button type="button" class="btn-back" onclick="goBack()">Back to Dashboard</button>
     </form>
@@ -170,10 +179,11 @@
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
+      const role = document.getElementById('role').value;
       const messageDiv = document.getElementById('message');
 
       // Validation
-      if (!username || !password || !confirmPassword) {
+      if (!username || !password || !confirmPassword || !role) {
         showMessage('Please fill in all fields', 'error');
         return;
       }
@@ -194,7 +204,7 @@
       }
 
       try {
-        const res = await fetch("/api/auth/register", {
+        const res = await fetch("/api/users", {
           method: "POST",
           headers: { 
             "Content-Type": "application/json",
@@ -203,7 +213,7 @@
           body: JSON.stringify({
             username: username,
             password: password,
-            role: "Inspector" // Default role - hidden from admin
+            role: role
           })
         });
 

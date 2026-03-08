@@ -707,3 +707,262 @@ window.editBook = editBook;
 window.deleteBook = deleteBook;
 window.saveBook = saveBook;
 window.closeBookModal = closeBookModal;
+
+
+// Facility Type Navigation
+function showFacilityType(type) {
+    // Hide all sections
+    document.querySelectorAll('.facility-section').forEach(section => {
+        section.classList.remove('active-section');
+    });
+    
+    // Remove active class from all buttons
+    document.querySelectorAll('.facility-type-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show selected section
+    document.getElementById(`section-${type}`).classList.add('active-section');
+    document.getElementById(`btn-${type}`).classList.add('active');
+    
+    // Load specific content based on type
+    if (type === 'laboratory') {
+        loadLaboratoryDetails();
+    } else if (type === 'classroom') {
+        loadClassroomDetails();
+    } else if (type === 'computer') {
+        loadComputerLabDetails();
+    } else if (type === 'office') {
+        loadOfficeDetails();
+    } else if (type === 'overview') {
+        loadOverviewDetails();
+    }
+}
+
+function loadOverviewDetails() {
+    const tbody = document.getElementById('overviewFacilitiesBody');
+    
+    if (facilities.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 2rem; color: #999;">
+                    No facilities found
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = facilities.map(facility => {
+        const compliance = checkCompliance(facility);
+        const facilityType = facility.type || 'General';
+        
+        return `
+            <tr>
+                <td>${facility.name}</td>
+                <td>${facilityType}</td>
+                <td>${facility.area}</td>
+                <td>${facility.capacity || '-'}</td>
+                <td style="color: ${getConditionColor(facility.condition)}">${facility.condition}</td>
+                <td style="color: ${compliance.compliant ? '#28a745' : '#dc3545'}">
+                    ${compliance.compliant ? '✓ Compliant' : compliance.issues.join(', ')}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function loadLaboratoryDetails() {
+    const labs = facilities.filter(f => 
+        f.name.toLowerCase().includes('lab') || 
+        f.type === 'laboratory'
+    );
+    
+    const content = document.getElementById('laboratoryContent');
+    
+    if (labs.length === 0) {
+        content.innerHTML = `
+            <p style="text-align: center; padding: 2rem; color: #999;">
+                No laboratory facilities found
+            </p>
+        `;
+        return;
+    }
+    
+    content.innerHTML = labs.map(lab => {
+        const compliance = checkCompliance(lab);
+        return `
+            <div style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                <h4 style="color: #667eea; margin-bottom: 1rem;">${lab.name}</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div>
+                        <strong>Area:</strong> ${lab.area} ካሬ
+                    </div>
+                    <div>
+                        <strong>Capacity:</strong> ${lab.capacity || 'N/A'} people
+                    </div>
+                    <div>
+                        <strong>Condition:</strong> <span style="color: ${getConditionColor(lab.condition)}">${lab.condition}</span>
+                    </div>
+                    <div>
+                        <strong>Computers:</strong> ${lab.computers || 0}
+                    </div>
+                </div>
+                <div style="margin-top: 1rem; padding: 1rem; background: ${compliance.compliant ? '#d4edda' : '#f8d7da'}; border-radius: 5px;">
+                    <strong>Standards Compliance:</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: ${compliance.compliant ? '#155724' : '#721c24'}">
+                        ${compliance.compliant ? '✓ Meets all standards' : compliance.issues.join('. ')}
+                    </p>
+                </div>
+                ${lab.notes ? `<div style="margin-top: 1rem;"><strong>Notes:</strong> ${lab.notes}</div>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+function loadClassroomDetails() {
+    const classrooms = facilities.filter(f => 
+        f.name.toLowerCase().includes('class') || 
+        f.type === 'classroom'
+    );
+    
+    const content = document.getElementById('classroomContent');
+    
+    if (classrooms.length === 0) {
+        content.innerHTML = `
+            <p style="text-align: center; padding: 2rem; color: #999;">
+                No classroom facilities found
+            </p>
+        `;
+        return;
+    }
+    
+    content.innerHTML = classrooms.map(classroom => {
+        const compliance = checkCompliance(classroom);
+        return `
+            <div style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                <h4 style="color: #667eea; margin-bottom: 1rem;">${classroom.name}</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div>
+                        <strong>Area:</strong> ${classroom.area} ካሬ
+                    </div>
+                    <div>
+                        <strong>Capacity:</strong> ${classroom.capacity || 'N/A'} students
+                    </div>
+                    <div>
+                        <strong>Condition:</strong> <span style="color: ${getConditionColor(classroom.condition)}">${classroom.condition}</span>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem; padding: 1rem; background: ${compliance.compliant ? '#d4edda' : '#f8d7da'}; border-radius: 5px;">
+                    <strong>Standards Compliance:</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: ${compliance.compliant ? '#155724' : '#721c24'}">
+                        ${compliance.compliant ? '✓ Meets all standards' : compliance.issues.join('. ')}
+                    </p>
+                </div>
+                ${classroom.notes ? `<div style="margin-top: 1rem;"><strong>Notes:</strong> ${classroom.notes}</div>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+function loadComputerLabDetails() {
+    const computerLabs = facilities.filter(f => 
+        f.name.toLowerCase().includes('computer') || 
+        f.name.toLowerCase().includes('it') ||
+        f.type === 'computer-lab'
+    );
+    
+    const content = document.getElementById('computerContent');
+    
+    if (computerLabs.length === 0) {
+        content.innerHTML = `
+            <p style="text-align: center; padding: 2rem; color: #999;">
+                No computer lab facilities found
+            </p>
+        `;
+        return;
+    }
+    
+    content.innerHTML = computerLabs.map(lab => {
+        const compliance = checkCompliance(lab);
+        return `
+            <div style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                <h4 style="color: #667eea; margin-bottom: 1rem;">${lab.name}</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div>
+                        <strong>Area:</strong> ${lab.area} ካሬ
+                    </div>
+                    <div>
+                        <strong>Capacity:</strong> ${lab.capacity || 'N/A'} people
+                    </div>
+                    <div>
+                        <strong>Condition:</strong> <span style="color: ${getConditionColor(lab.condition)}">${lab.condition}</span>
+                    </div>
+                    <div>
+                        <strong>Computers:</strong> ${lab.computers || 0}
+                    </div>
+                </div>
+                <div style="margin-top: 1rem; padding: 1rem; background: ${compliance.compliant ? '#d4edda' : '#f8d7da'}; border-radius: 5px;">
+                    <strong>Standards Compliance:</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: ${compliance.compliant ? '#155724' : '#721c24'}">
+                        ${compliance.compliant ? '✓ Meets all standards' : compliance.issues.join('. ')}
+                    </p>
+                </div>
+                ${lab.notes ? `<div style="margin-top: 1rem;"><strong>Notes:</strong> ${lab.notes}</div>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+function loadOfficeDetails() {
+    const offices = facilities.filter(f => 
+        f.name.toLowerCase().includes('office') || 
+        f.name.toLowerCase().includes('staff') ||
+        f.type === 'office' ||
+        f.type === 'staff'
+    );
+    
+    const content = document.getElementById('officeContent');
+    
+    if (offices.length === 0) {
+        content.innerHTML = `
+            <p style="text-align: center; padding: 2rem; color: #999;">
+                No office facilities found
+            </p>
+        `;
+        return;
+    }
+    
+    content.innerHTML = offices.map(office => {
+        const compliance = checkCompliance(office);
+        return `
+            <div style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                <h4 style="color: #667eea; margin-bottom: 1rem;">${office.name}</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div>
+                        <strong>Area:</strong> ${office.area} ካሬ
+                    </div>
+                    <div>
+                        <strong>Capacity:</strong> ${office.capacity || 'N/A'} people
+                    </div>
+                    <div>
+                        <strong>Condition:</strong> <span style="color: ${getConditionColor(office.condition)}">${office.condition}</span>
+                    </div>
+                    <div>
+                        <strong>Computers:</strong> ${office.computers || 0}
+                    </div>
+                </div>
+                <div style="margin-top: 1rem; padding: 1rem; background: ${compliance.compliant ? '#d4edda' : '#f8d7da'}; border-radius: 5px;">
+                    <strong>Standards Compliance:</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: ${compliance.compliant ? '#155724' : '#721c24'}">
+                        ${compliance.compliant ? '✓ Meets all standards' : compliance.issues.join('. ')}
+                    </p>
+                </div>
+                ${office.notes ? `<div style="margin-top: 1rem;"><strong>Notes:</strong> ${office.notes}</div>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+// Make function globally accessible
+window.showFacilityType = showFacilityType;

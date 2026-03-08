@@ -111,6 +111,62 @@
             font-size: 1.1rem;
         }
 
+        /* Facility Type Buttons */
+        .facility-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .facility-type-btn {
+            background: white;
+            border: 2px solid #e0e0e0;
+            padding: 1.5rem 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .facility-type-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(102,126,234,0.2);
+        }
+
+        .facility-type-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            color: white;
+        }
+
+        .facility-type-btn .icon {
+            font-size: 2rem;
+        }
+
+        .facility-type-btn .label {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .facility-type-btn.active .label {
+            color: white;
+        }
+
+        /* Facility Sections */
+        .facility-section {
+            display: none;
+        }
+
+        .facility-section.active-section {
+            display: block;
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -364,6 +420,23 @@
                 font-size: 1.5rem;
             }
 
+            .facility-types {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+            }
+
+            .facility-type-btn {
+                padding: 1rem 0.5rem;
+            }
+
+            .facility-type-btn .icon {
+                font-size: 1.5rem;
+            }
+
+            .facility-type-btn .label {
+                font-size: 0.8rem;
+            }
+
             .stats-grid {
                 grid-template-columns: 1fr 1fr;
                 gap: 1rem;
@@ -514,93 +587,210 @@
             <p>Manage and inspect school facilities, classrooms, laboratories, and infrastructure</p>
         </div>
 
-        <!-- Statistics -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-value" id="totalFacilities">0</div>
-                <div class="stat-label">Total Facilities</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="totalArea">0</div>
-                <div class="stat-label">Total Area (ካሬ)</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="totalComputers">0</div>
-                <div class="stat-label">Total Computers</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="compliantCount">0/0</div>
-                <div class="stat-label">Meets Standards</div>
-            </div>
+        <!-- Facility Type Buttons -->
+        <div class="facility-types">
+            <button class="facility-type-btn active" onclick="showFacilityType('overview')" id="btn-overview">
+                <span class="icon">📊</span>
+                <span class="label">Overview</span>
+            </button>
+            <button class="facility-type-btn" onclick="showFacilityType('facilities')" id="btn-facilities">
+                <span class="icon">🏫</span>
+                <span class="label">Facilities</span>
+            </button>
+            <button class="facility-type-btn" onclick="showFacilityType('library')" id="btn-library">
+                <span class="icon">📚</span>
+                <span class="label">Library</span>
+            </button>
+            <button class="facility-type-btn" onclick="showFacilityType('laboratory')" id="btn-laboratory">
+                <span class="icon">🔬</span>
+                <span class="label">Laboratory</span>
+            </button>
+            <button class="facility-type-btn" onclick="showFacilityType('classroom')" id="btn-classroom">
+                <span class="icon">📖</span>
+                <span class="label">Classrooms</span>
+            </button>
+            <button class="facility-type-btn" onclick="showFacilityType('computer')" id="btn-computer">
+                <span class="icon">💻</span>
+                <span class="label">Computer Lab</span>
+            </button>
+            <button class="facility-type-btn" onclick="showFacilityType('office')" id="btn-office">
+                <span class="icon">🏢</span>
+                <span class="label">Offices</span>
+            </button>
         </div>
 
-        <!-- Facilities List -->
-        <div class="facilities-section">
-            <div class="section-header">
-                <h3>Facilities Inventory</h3>
-                <div>
-                    <button class="btn-add admin-only" onclick="showAddModal()" style="display: none;">+ Add Facility</button>
+        <!-- Overview Section -->
+        <div id="section-overview" class="facility-section active-section">
+
+        <!-- Overview Section -->
+        <div id="section-overview" class="facility-section active-section">
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalFacilities">0</div>
+                    <div class="stat-label">Total Facilities</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalArea">0</div>
+                    <div class="stat-label">Total Area (ካሬ)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalComputers">0</div>
+                    <div class="stat-label">Total Computers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="compliantCount">0/0</div>
+                    <div class="stat-label">Meets Standards</div>
                 </div>
             </div>
 
-            <table class="facilities-table">
-                <thead>
-                    <tr>
-                        <th>Facility Name</th>
-                        <th>Area (ካሬ)</th>
-                        <th>Capacity</th>
-                        <th>Condition</th>
-                        <th>Computers</th>
-                        <th>Standards</th>
-                        <th class="admin-only" style="display: none;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="facilitiesBody">
-                    <tr>
-                        <td colspan="7" style="text-align: center; padding: 2rem; color: #999;">
-                            Loading facilities...
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="facilities-section">
+                <div class="section-header">
+                    <h3>All Facilities Overview</h3>
+                </div>
+                <table class="facilities-table">
+                    <thead>
+                        <tr>
+                            <th>Facility Name</th>
+                            <th>Type</th>
+                            <th>Area (ካሬ)</th>
+                            <th>Capacity</th>
+                            <th>Condition</th>
+                            <th>Standards</th>
+                        </tr>
+                    </thead>
+                    <tbody id="overviewFacilitiesBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 2rem; color: #999;">
+                                Loading facilities...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <!-- Library Books Inventory -->
-        <div class="facilities-section">
-            <div class="section-header">
-                <h3>📚 Library Books Inventory</h3>
-                <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
-                    <input type="text" id="bookSearch" placeholder="Search books..." style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px; width: 250px;">
-                    <select id="categoryFilter" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
-                        <option value="">All Categories</option>
-                    </select>
-                    <button class="btn-add admin-only" onclick="showAddBookModal()" style="display: none;">+ Add Book</button>
+        <!-- Facilities Management Section -->
+        <div id="section-facilities" class="facility-section">
+            <div class="facilities-section">
+                <div class="section-header">
+                    <h3>Facilities Inventory</h3>
+                    <div>
+                        <button class="btn-add admin-only" onclick="showAddModal()" style="display: none;">+ Add Facility</button>
+                    </div>
+                </div>
+
+                <table class="facilities-table">
+                    <thead>
+                        <tr>
+                            <th>Facility Name</th>
+                            <th>Area (ካሬ)</th>
+                            <th>Capacity</th>
+                            <th>Condition</th>
+                            <th>Computers</th>
+                            <th>Standards</th>
+                            <th class="admin-only" style="display: none;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="facilitiesBody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 2rem; color: #999;">
+                                Loading facilities...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Library Section -->
+        <div id="section-library" class="facility-section">
+        <!-- Library Section -->
+        <div id="section-library" class="facility-section">
+            <div class="facilities-section">
+                <div class="section-header">
+                    <h3>📚 Library Books Inventory</h3>
+                    <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                        <input type="text" id="bookSearch" placeholder="Search books..." style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px; width: 250px;">
+                        <select id="categoryFilter" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                            <option value="">All Categories</option>
+                        </select>
+                        <button class="btn-add admin-only" onclick="showAddBookModal()" style="display: none;">+ Add Book</button>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 5px;">
+                    <strong>Total Books: <span id="totalBooks">1,992</span></strong> | 
+                    <strong>Categories: <span id="totalCategories">25</span></strong>
+                </div>
+
+                <table class="facilities-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Title</th>
+                            <th>Copies</th>
+                            <th>Code</th>
+                            <th class="admin-only" style="display: none;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="booksBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 2rem; color: #999;">
+                                Loading library books...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Laboratory Section -->
+        <div id="section-laboratory" class="facility-section">
+            <div class="facilities-section">
+                <div class="section-header">
+                    <h3>🔬 Laboratory Facilities</h3>
+                </div>
+                <div id="laboratoryContent">
+                    <p style="text-align: center; padding: 2rem; color: #999;">Loading laboratory information...</p>
                 </div>
             </div>
+        </div>
 
-            <div style="margin-bottom: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 5px;">
-                <strong>Total Books: <span id="totalBooks">1,992</span></strong> | 
-                <strong>Categories: <span id="totalCategories">25</span></strong>
+        <!-- Classroom Section -->
+        <div id="section-classroom" class="facility-section">
+            <div class="facilities-section">
+                <div class="section-header">
+                    <h3>📖 Classroom Facilities</h3>
+                </div>
+                <div id="classroomContent">
+                    <p style="text-align: center; padding: 2rem; color: #999;">Loading classroom information...</p>
+                </div>
             </div>
+        </div>
 
-            <table class="facilities-table">
-                <thead>
-                    <tr>
-                        <th>Category</th>
-                        <th>Title</th>
-                        <th>Copies</th>
-                        <th>Code</th>
-                        <th class="admin-only" style="display: none;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="booksBody">
-                    <tr>
-                        <td colspan="5" style="text-align: center; padding: 2rem; color: #999;">
-                            Loading library books...
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <!-- Computer Lab Section -->
+        <div id="section-computer" class="facility-section">
+            <div class="facilities-section">
+                <div class="section-header">
+                    <h3>💻 Computer Laboratory</h3>
+                </div>
+                <div id="computerContent">
+                    <p style="text-align: center; padding: 2rem; color: #999;">Loading computer lab information...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Office Section -->
+        <div id="section-office" class="facility-section">
+            <div class="facilities-section">
+                <div class="section-header">
+                    <h3>🏢 Office Facilities</h3>
+                </div>
+                <div id="officeContent">
+                    <p style="text-align: center; padding: 2rem; color: #999;">Loading office information...</p>
+                </div>
+            </div>
         </div>
     </div>
 

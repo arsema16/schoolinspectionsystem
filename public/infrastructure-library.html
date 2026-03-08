@@ -587,6 +587,30 @@
             <p>Browse and manage the school library collection</p>
         </div>
 
+        <!-- Library Facility Rating -->
+        <div id="libraryFacilityRating" style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h3 style="color: #667eea; margin: 0 0 0.5rem 0;">Library Facility</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                        <div><strong>Area:</strong> <span id="libraryArea">Loading...</span> ካሬ</div>
+                        <div><strong>Capacity:</strong> <span id="libraryCapacity">Loading...</span> people</div>
+                        <div><strong>Condition:</strong> <span id="libraryCondition">Loading...</span></div>
+                        <div><strong>Total Books:</strong> <span id="libraryBookCount">Loading...</span></div>
+                    </div>
+                </div>
+                <div style="text-align: right; min-width: 150px;">
+                    <div id="libraryRatingStars" style="font-size: 1.5rem; font-weight: bold;">⭐⭐⭐⭐⭐</div>
+                    <div id="libraryRatingGrade" style="font-size: 0.9rem; font-weight: 600; margin-top: 0.3rem;">A+ - Excellent</div>
+                    <div id="libraryRatingScore" style="font-size: 0.85rem; color: #666; margin-top: 0.2rem;">95/100</div>
+                </div>
+            </div>
+            <div id="libraryCompliance" style="margin-top: 1rem; padding: 1rem; border-radius: 5px;">
+                <strong>Standards Compliance:</strong>
+                <p id="libraryComplianceText" style="margin: 0.5rem 0 0 0;">Loading...</p>
+            </div>
+        </div>
+
         <!-- Library Section -->
         <div class="facilities-section">
             <div class="section-header">

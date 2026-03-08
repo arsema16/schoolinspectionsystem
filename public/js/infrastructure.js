@@ -130,7 +130,7 @@ async function loadFacilities() {
 // Get default facilities data
 function getDefaultFacilities() {
     return [
-        { id: '1', name: 'Library', area: 10, capacity: 30, condition: 'Good', computers: 0, notes: '', type: 'library' },
+        { id: '1', name: 'Library', area: 110, capacity: 30, condition: 'Good', computers: 0, notes: '', type: 'library' },
         { id: '2', name: 'Laboratory', area: 62, capacity: 40, condition: 'Good', computers: 0, notes: '', type: 'laboratory' },
         { id: '3', name: 'Learning Class', area: 56, capacity: 45, condition: 'Good', computers: 0, notes: '', type: 'classroom' },
         { id: '4', name: 'Pedagogue Center', area: 72, capacity: 50, condition: 'Good', computers: 0, notes: '', type: 'special' },
@@ -545,16 +545,153 @@ async function loadLibraryBooks() {
         // Update totals
         updateBookTotals();
         
+        // Display library facility rating
+        displayLibraryRating();
+        
     } catch (error) {
         console.error('Error loading library books:', error);
-        document.getElementById('booksBody').innerHTML = `
-            <tr>
-                <td colspan="5" style="text-align: center; padding: 2rem; color: #dc3545;">
-                    Error loading library books
-                </td>
-            </tr>
-        `;
+        const booksBody = document.getElementById('booksBody');
+        if (booksBody) {
+            booksBody.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 2rem; color: #dc3545;">
+                        Error loading library books
+                    </td>
+                </tr>
+            `;
+        }
     }
+}
+
+function displayLibraryRating() {
+    // Find the library facility
+    const library = facilities.find(f => f.type === 'library' || f.name.toLowerCase().includes('library'));
+    
+    if (!library) {
+        console.log('Library facility not found');
+        return;
+    }
+    
+    // Calculate total books
+    const totalBooks = libraryBooks.reduce((sum, book) => sum + parseInt(book.copies || 0), 0);
+    
+    // Update facility info
+    const areaEl = document.getElementById('libraryArea');
+    const capacityEl = document.getElementById('libraryCapacity');
+    const conditionEl = document.getElementById('libraryCondition');
+    const bookCountEl = document.getElementById('libraryBookCount');
+    
+    if (areaEl) areaEl.textContent = library.area;
+    if (capacityEl) capacityEl.textContent = library.capacity || 'N/A';
+    if (conditionEl) {
+        conditionEl.textContent = library.condition;
+        conditionEl.style.color = getConditionColor(library.condition);
+    }
+    if (bookCountEl) bookCountEl.textContent = totalBooks.toLocaleString();
+    
+    // Check compliance
+    const compliance = checkCompliance(library);
+    const rating = calculateLibraryRating(library, compliance, totalBooks);
+    
+    // Update rating display
+    const starsEl = document.getElementById('libraryRatingStars');
+    const gradeEl = document.getElementById('libraryRatingGrade');
+    const scoreEl = document.getElementById('libraryRatingScore');
+    const complianceEl = document.getElementById('libraryCompliance');
+    const complianceTextEl = document.getElementById('libraryComplianceText');
+    
+    if (starsEl) starsEl.textContent = rating.stars;
+    if (gradeEl) {
+        gradeEl.textContent = `${rating.grade} - ${rating.label}`;
+        gradeEl.style.color = rating.color;
+    }
+    if (scoreEl) scoreEl.textContent = `${rating.score}/100`;
+    
+    if (complianceEl && complianceTextEl) {
+        complianceEl.style.background = compliance.compliant ? '#d4edda' : '#f8d7da';
+        complianceTextEl.style.color = compliance.compliant ? '#155724' : '#721c24';
+        complianceTextEl.textContent = compliance.compliant ? 
+            '✓ Meets all standards' : 
+            compliance.issues.join('. ');
+    }
+}
+
+function calculateLibraryRating(library, compliance, totalBooks) {
+    let score = 0;
+    const standards = getStandards();
+    const standard = standards['library'];
+    
+    // Area score (30 points)
+    const areaRatio = library.area / standard.minArea;
+    score += areaRatio >= 1 ? 30 : Math.floor(30 * areaRatio);
+    
+    // Capacity score (15 points)
+    if (library.capacity) {
+        const capacityRatio = library.capacity / standard.minCapacity;
+        score += capacityRatio >= 1 ? 15 : Math.floor(15 * capacityRatio);
+    } else {
+        score += 7;
+    }
+    
+    // Condition score (25 points)
+    const conditionScores = {
+        'Excellent': 25,
+        'Good': 20,
+        'Fair': 12,
+        'Poor': 5,
+        'Critical': 0
+    };
+    score += conditionScores[library.condition] || 12;
+    
+    // Book collection score (30 points) - based on number of books
+    if (totalBooks >= 2000) {
+        score += 30;
+    } else if (totalBooks >= 1500) {
+        score += 25;
+    } else if (totalBooks >= 1000) {
+        score += 20;
+    } else if (totalBooks >= 500) {
+        score += 15;
+    } else {
+        score += 10;
+    }
+    
+    // Determine grade and label
+    let grade, label, color, stars;
+    
+    if (score >= 90) {
+        grade = 'A+';
+        label = 'Excellent';
+        color = '#28a745';
+        stars = '⭐⭐⭐⭐⭐';
+    } else if (score >= 80) {
+        grade = 'A';
+        label = 'Very Good';
+        color = '#5cb85c';
+        stars = '⭐⭐⭐⭐';
+    } else if (score >= 70) {
+        grade = 'B';
+        label = 'Good';
+        color = '#5bc0de';
+        stars = '⭐⭐⭐';
+    } else if (score >= 60) {
+        grade = 'C';
+        label = 'Satisfactory';
+        color = '#f0ad4e';
+        stars = '⭐⭐';
+    } else if (score >= 50) {
+        grade = 'D';
+        label = 'Needs Improvement';
+        color = '#ff9800';
+        stars = '⭐';
+    } else {
+        grade = 'F';
+        label = 'Poor';
+        color = '#dc3545';
+        stars = '☆';
+    }
+    
+    return { score, grade, label, color, stars };
 }
 
 function saveBooksToStorage() {

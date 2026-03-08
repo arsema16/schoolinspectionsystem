@@ -1270,33 +1270,59 @@ async function showSystemStats() {
         let statsHtml = '<h3>System Statistics</h3>';
         statsHtml += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 20px;">';
         
-        // User statistics
+        // Audit log statistics
         statsHtml += `
             <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
-                <h4 style="color: #667eea;">User Activity</h4>
-                <p><strong>Total Users:</strong> ${data.totalUsers || 0}</p>
-                <p><strong>Active Sessions:</strong> ${data.activeSessions || 0}</p>
-                <p><strong>Failed Login Attempts (24h):</strong> ${data.failedLogins || 0}</p>
+                <h4 style="color: #667eea;">Audit Logs</h4>
+                <p><strong>Total Logs:</strong> ${data.totalLogs || 0}</p>
+                <p><strong>Most Common Action:</strong> ${data.actionStats && data.actionStats.length > 0 ? data.actionStats[0]._id : 'N/A'}</p>
+                <p><strong>Most Active Entity:</strong> ${data.entityStats && data.entityStats.length > 0 ? data.entityStats[0]._id : 'N/A'}</p>
             </div>
         `;
         
-        // System activity
+        // Top users activity
         statsHtml += `
             <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
-                <h4 style="color: #667eea;">System Activity</h4>
-                <p><strong>Total Actions (24h):</strong> ${data.totalActions || 0}</p>
-                <p><strong>Data Imports:</strong> ${data.imports || 0}</p>
-                <p><strong>Reports Generated:</strong> ${data.reports || 0}</p>
+                <h4 style="color: #667eea;">Top Active Users</h4>
+                ${data.topUsers && data.topUsers.length > 0 ? 
+                    data.topUsers.slice(0, 5).map(user => 
+                        `<p><strong>${user._id}:</strong> ${user.count} actions</p>`
+                    ).join('') 
+                    : '<p>No user activity data</p>'}
             </div>
         `;
+        
+        // Action breakdown
+        if (data.actionStats && data.actionStats.length > 0) {
+            statsHtml += `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <h4 style="color: #667eea;">Actions Breakdown</h4>
+                    ${data.actionStats.slice(0, 5).map(action => 
+                        `<p><strong>${action._id}:</strong> ${action.count}</p>`
+                    ).join('')}
+                </div>
+            `;
+        }
+        
+        // Entity breakdown
+        if (data.entityStats && data.entityStats.length > 0) {
+            statsHtml += `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <h4 style="color: #667eea;">Entity Types</h4>
+                    ${data.entityStats.map(entity => 
+                        `<p><strong>${entity._id}:</strong> ${entity.count}</p>`
+                    ).join('')}
+                </div>
+            `;
+        }
         
         statsHtml += '</div>';
         
         const newWindow = window.open('', 'System Statistics', 'width=800,height=600');
         newWindow.document.write(`<html><head><title>System Statistics</title><style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            h3 { color: #667eea; }
-            h4 { margin-top: 0; }
+            body { font-family: Arial, sans-serif; padding: 20px; background: #f5f7fa; }
+            h3 { color: #667eea; margin-bottom: 20px; }
+            h4 { margin-top: 0; color: #667eea; }
             p { margin: 10px 0; }
         </style></head><body>${statsHtml}</body></html>`);
         

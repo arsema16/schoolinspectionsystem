@@ -628,13 +628,19 @@ function calculateLibraryRating(library, compliance, totalBooks) {
     const standards = getStandards();
     const standard = standards['library'];
     
+    if (!standard) {
+        console.error('Library standards not found');
+        return { score: 0, grade: 'F', label: 'Error', color: '#dc3545', stars: '☆' };
+    }
+    
     // Area score (30 points)
     const areaRatio = library.area / standard.minArea;
     score += areaRatio >= 1 ? 30 : Math.floor(30 * areaRatio);
     
-    // Capacity score (15 points)
+    // Capacity score (15 points) - use 50 as minimum capacity standard
+    const minCapacity = 50;
     if (library.capacity) {
-        const capacityRatio = library.capacity / standard.minCapacity;
+        const capacityRatio = library.capacity / minCapacity;
         score += capacityRatio >= 1 ? 15 : Math.floor(15 * capacityRatio);
     } else {
         score += 7;

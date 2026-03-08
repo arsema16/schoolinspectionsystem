@@ -5,7 +5,7 @@ const API_BASE = '/api';
 let authToken = localStorage.getItem('token');
 let userRole = localStorage.getItem('role');
 let facilities = [];
-let filterType = ''; // Will be set by each page
+// filterType is set by each page before this script loads
 
 // Check authentication
 if (!authToken) {

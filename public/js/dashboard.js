@@ -1155,8 +1155,8 @@ async function showUserList() {
         }
         
         if (!response.ok) {
-            // If endpoint doesn't exist, show a message
-            alert('User Management: This feature requires additional API endpoints. Contact your system administrator.');
+            // Feature removed - User Management section no longer available
+            console.log('User Management feature has been removed');
             return;
         }
         
@@ -1204,7 +1204,8 @@ async function showUserList() {
         
     } catch (error) {
         console.error('Error loading users:', error);
-        alert('User Management: This feature requires additional API endpoints. Contact your system administrator.');
+        // Feature removed - User Management section no longer available
+        console.log('User Management feature has been removed');
     }
 }
 

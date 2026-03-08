@@ -580,10 +580,11 @@ function updateBookTotals() {
 
 function renderBooks() {
     const booksBody = document.getElementById('booksBody');
-    const isAdmin = localStorage.getItem('userRole') === 'Admin';
+    const isAdmin = userRole === 'Admin'; // Use the global userRole variable
     
     console.log('=== Rendering Books ===');
     console.log('Is Admin:', isAdmin);
+    console.log('User Role:', userRole);
     console.log('Filtered Books:', filteredBooks.length);
     
     if (filteredBooks.length === 0) {

@@ -14,6 +14,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Routes
 const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const analysisRoutes = require("./routes/analysisRoutes");
 const infrastructureRoutes = require("./routes/infrastructureRoutes");
@@ -24,6 +25,7 @@ const intelligenceRoutes = require("./routes/intelligenceRoutes");
 console.log("Loading routes...");
 app.use("/api/auth", authRoutes);
 console.log("Auth routes loaded");
+app.use("/api/users", userRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/analysis", analysisRoutes);
 app.use("/api/infrastructure", infrastructureRoutes);

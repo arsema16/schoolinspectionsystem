@@ -1155,57 +1155,75 @@ async function showUserList() {
         }
         
         if (!response.ok) {
-            // Feature removed - User Management section no longer available
-            console.log('User Management feature has been removed');
+            const errorData = await response.json().catch(() => ({}));
+            alert('Failed to load users: ' + (errorData.message || 'Unknown error'));
             return;
         }
         
         const data = await response.json();
         
+        if (!data.users || data.users.length === 0) {
+            alert('No users found in the system');
+            return;
+        }
+        
         // Create a new window with user list
-        const newWindow = window.open('', 'User Management', 'width=800,height=600');
+        const newWindow = window.open('', 'User Management', 'width=900,height=600');
         newWindow.document.write(`
             <html>
             <head>
                 <title>User Management</title>
                 <style>
-                    body { font-family: Arial, sans-serif; padding: 20px; }
+                    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f7fa; }
+                    .container { max-width: 1200px; margin: 0 auto; background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                    h2 { color: #667eea; margin-bottom: 1.5rem; }
                     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
-                    th { background-color: #667eea; color: white; }
+                    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+                    th { background-color: #667eea; color: white; font-weight: 600; }
                     tr:hover { background-color: #f5f5f5; }
-                    h2 { color: #667eea; }
-                    .badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; }
+                    .badge { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
                     .badge-admin { background: #dc3545; color: white; }
                     .badge-inspector { background: #28a745; color: white; }
+                    .status-active { color: #28a745; font-weight: 600; }
+                    .status-inactive { color: #dc3545; font-weight: 600; }
+                    .btn-close { background: #667eea; color: white; border: none; padding: 0.5rem 1.5rem; border-radius: 5px; cursor: pointer; margin-top: 1rem; }
+                    .btn-close:hover { background: #5568d3; }
                 </style>
             </head>
             <body>
-                <h2>User Accounts (${data.users.length} users)</h2>
-                <table>
-                    <tr>
-                        <th>Username</th>
-                        <th>Role</th>
-                        <th>Last Login</th>
-                        <th>Status</th>
-                    </tr>
-                    ${data.users.map(u => `
-                        <tr>
-                            <td>${u.username}</td>
-                            <td><span class="badge badge-${u.role.toLowerCase()}">${u.role}</span></td>
-                            <td>${u.lastLogin ? new Date(u.lastLogin).toLocaleString() : 'Never'}</td>
-                            <td>${u.isActive ? 'Active' : 'Inactive'}</td>
-                        </tr>
-                    `).join('')}
-                </table>
+                <div class="container">
+                    <h2>👥 User Accounts (${data.count} users)</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th>Last Login</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.users.map(u => `
+                                <tr>
+                                    <td>${u.username}</td>
+                                    <td><span class="badge badge-${u.role.toLowerCase()}">${u.role}</span></td>
+                                    <td>${u.lastLogin ? new Date(u.lastLogin).toLocaleString() : 'Never'}</td>
+                                    <td class="${u.isActive ? 'status-active' : 'status-inactive'}">${u.isActive ? '✓ Active' : '✗ Inactive'}</td>
+                                    <td>${new Date(u.createdAt).toLocaleDateString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <button class="btn-close" onclick="window.close()">Close</button>
+                </div>
             </body>
             </html>
         `);
         
     } catch (error) {
         console.error('Error loading users:', error);
-        // Feature removed - User Management section no longer available
-        console.log('User Management feature has been removed');
+        alert('Failed to load users: ' + error.message);
     }
 }
 

@@ -38,6 +38,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Load library books
     loadLibraryBooks();
+    
+    // Initialize overview section
+    setTimeout(() => {
+        loadOverviewDetails();
+    }, 500);
 });
 
 // Display user information
@@ -711,6 +716,8 @@ window.closeBookModal = closeBookModal;
 
 // Facility Type Navigation
 function showFacilityType(type) {
+    console.log('showFacilityType called with:', type);
+    
     // Hide all sections
     document.querySelectorAll('.facility-section').forEach(section => {
         section.classList.remove('active-section');
@@ -722,8 +729,19 @@ function showFacilityType(type) {
     });
     
     // Show selected section
-    document.getElementById(`section-${type}`).classList.add('active-section');
-    document.getElementById(`btn-${type}`).classList.add('active');
+    const section = document.getElementById(`section-${type}`);
+    const button = document.getElementById(`btn-${type}`);
+    
+    console.log('Section found:', section);
+    console.log('Button found:', button);
+    
+    if (section) {
+        section.classList.add('active-section');
+    }
+    
+    if (button) {
+        button.classList.add('active');
+    }
     
     // Load specific content based on type
     if (type === 'laboratory') {

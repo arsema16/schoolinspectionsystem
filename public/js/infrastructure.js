@@ -250,6 +250,13 @@ function checkCompliance(facility) {
 // Render facilities table
 function renderFacilities() {
     const tbody = document.getElementById('facilitiesBody');
+    
+    // Check if element exists (not all pages have this element)
+    if (!tbody) {
+        console.log('facilitiesBody element not found - skipping render');
+        return;
+    }
+    
     const isAdmin = (userRole === 'Admin');
     
     console.log('=== Rendering Facilities ===');
@@ -556,6 +563,13 @@ function saveBooksToStorage() {
 
 function populateCategoryFilter() {
     const categoryFilter = document.getElementById('categoryFilter');
+    
+    // Check if element exists (not all pages have this element)
+    if (!categoryFilter) {
+        console.log('categoryFilter element not found - skipping populate');
+        return;
+    }
+    
     const categories = [...new Set(libraryBooks.map(book => book.category))].sort();
     
     // Clear existing options except "All Categories"
@@ -571,15 +585,31 @@ function populateCategoryFilter() {
 }
 
 function updateBookTotals() {
+    const totalBooksEl = document.getElementById('totalBooks');
+    const totalCategoriesEl = document.getElementById('totalCategories');
+    
+    // Check if elements exist (not all pages have these elements)
+    if (!totalBooksEl || !totalCategoriesEl) {
+        console.log('Book total elements not found - skipping update');
+        return;
+    }
+    
     const totalBooks = libraryBooks.reduce((sum, book) => sum + parseInt(book.copies), 0);
     const totalCategories = [...new Set(libraryBooks.map(book => book.category))].length;
     
-    document.getElementById('totalBooks').textContent = totalBooks.toLocaleString();
-    document.getElementById('totalCategories').textContent = totalCategories;
+    totalBooksEl.textContent = totalBooks.toLocaleString();
+    totalCategoriesEl.textContent = totalCategories;
 }
 
 function renderBooks() {
     const booksBody = document.getElementById('booksBody');
+    
+    // Check if element exists (not all pages have this element)
+    if (!booksBody) {
+        console.log('booksBody element not found - skipping render');
+        return;
+    }
+    
     const isAdmin = userRole === 'Admin'; // Use the global userRole variable
     
     console.log('=== Rendering Books ===');
@@ -627,8 +657,17 @@ function renderBooks() {
 }
 
 function filterBooks() {
-    const searchTerm = document.getElementById('bookSearch').value.toLowerCase();
-    const categoryFilter = document.getElementById('categoryFilter').value;
+    const bookSearchEl = document.getElementById('bookSearch');
+    const categoryFilterEl = document.getElementById('categoryFilter');
+    
+    // Check if elements exist
+    if (!bookSearchEl || !categoryFilterEl) {
+        console.log('Filter elements not found - skipping filter');
+        return;
+    }
+    
+    const searchTerm = bookSearchEl.value.toLowerCase();
+    const categoryFilter = categoryFilterEl.value;
     
     filteredBooks = libraryBooks.filter(book => {
         const matchesSearch = book.title.toLowerCase().includes(searchTerm) || 

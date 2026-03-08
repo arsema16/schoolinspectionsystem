@@ -761,27 +761,6 @@
         </div>
     </div>
 
-    <script>
-        // Force clear all caches and service workers FIRST
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                for(let registration of registrations) {
-                    registration.unregister();
-                }
-            });
-        }
-        if ('caches' in window) {
-            caches.keys().then(function(names) {
-                for (let name of names) {
-                    caches.delete(name);
-                }
-            });
-        }
-        
-        // Load dashboard.js with timestamp to bypass cache
-        const script = document.createElement('script');
-        script.src = 'js/dashboard.js?t=' + Date.now();
-        document.body.appendChild(script);
-    </script>
+    <script src="js/dashboard.js?v=4.0"></script>
 </body>
 </html>

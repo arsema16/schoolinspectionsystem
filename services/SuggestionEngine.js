@@ -28,8 +28,8 @@ class SuggestionEngine {
     // Analyze subject performance
     const subjectAnalysis = this.analyzeSubjects(trends);
     
-    // Analyze grade-level performance
-    const gradeAnalysis = this.analyzeGrades(redFlags);
+    // Analyze grade-level performance (pass trends for context)
+    const gradeAnalysis = this.analyzeGrades(redFlags, trends);
     
     // Determine priority level
     const latestYear = trends[trends.length - 1];
@@ -174,24 +174,33 @@ class SuggestionEngine {
     return { weakest, declining };
   }
 
-  analyzeGrades(redFlags) {
+  analyzeGrades(redFlags, trends) {
     const gradeDistribution = {};
-    const gradeTotals = {};
 
+    // Count red flags per grade
     redFlags.forEach(student => {
       const grade = student.gradeLevel;
       gradeDistribution[grade] = (gradeDistribution[grade] || 0) + 1;
     });
 
-    // Calculate percentages (assuming typical class sizes)
+    // Get actual student counts per grade from the latest year
+    let gradeCounts = {};
+    if (trends && trends.length > 0) {
+      const latestYear = trends[trends.length - 1];
+      gradeCounts = latestYear.gradeCounts || {};
+    }
+
+    // Calculate actual percentages
     const highRisk = Object.entries(gradeDistribution)
       .map(([grade, count]) => {
-        // Estimate total students per grade (rough estimate)
-        const estimatedTotal = count * 5; // Assume red flags are ~20% of total
+        const totalInGrade = gradeCounts[grade] || count * 5; // Fallback to estimate if no data
+        const percentage = totalInGrade > 0 ? (count / totalInGrade) * 100 : 0;
+        
         return {
           level: parseInt(grade),
           count: count,
-          percentage: (count / estimatedTotal) * 100
+          totalStudents: totalInGrade,
+          percentage: Math.min(percentage, 100) // Cap at 100%
         };
       })
       .filter(g => g.percentage > 15) // High risk if >15% failing

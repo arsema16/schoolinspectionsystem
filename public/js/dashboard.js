@@ -101,7 +101,6 @@ async function loadDashboardData() {
         // Load other data in background (non-blocking)
         loadRedFlags().catch(err => console.error('Red flags error:', err));
         loadSuggestions().catch(err => console.error('Suggestions error:', err));
-        loadInfrastructure().catch(err => console.error('Infrastructure error:', err));
         load2018Predictions().catch(err => console.error('Predictions error:', err));
         
         // Skip correlations for now (they're slow and not critical)
@@ -648,36 +647,6 @@ async function loadSuggestions() {
     }
 }
 
-// Load infrastructure analysis
-async function loadInfrastructure() {
-    try {
-        const filters = getFilters();
-        const params = new URLSearchParams();
-        if (filters.years) params.append('years', filters.years);
-
-        const response = await fetch(`${API_BASE}/analysis/infrastructure?${params}`, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
-
-        if (response.status === 401) {
-            handleUnauthorized();
-            return;
-        }
-
-        if (!response.ok) throw new Error('Failed to load infrastructure');
-
-        const data = await response.json();
-        renderInfrastructure(data.infrastructure);
-
-    } catch (error) {
-        console.error('Error loading infrastructure:', error);
-        document.getElementById('infrastructureContainer').innerHTML = 
-            '<div class="error">Failed to load infrastructure analysis</div>';
-    }
-}
-
 // Render suggestions
 function renderSuggestions(suggestions) {
     const container = document.getElementById('suggestionsContainer');
@@ -739,38 +708,6 @@ function renderSuggestions(suggestions) {
         html += '</div>';
     }
 
-    container.innerHTML = html;
-}
-
-// Render infrastructure analysis
-function renderInfrastructure(infrastructure) {
-    const container = document.getElementById('infrastructureContainer');
-    
-    if (!infrastructure || infrastructure.length === 0) {
-        container.innerHTML = '<div class="info">No infrastructure data available</div>';
-        return;
-    }
-
-    let html = '<div class="infrastructure-grid">';
-    
-    infrastructure.forEach(item => {
-        const impactClass = item.impact === 'positive' ? 'positive' : item.impact === 'negative' ? 'negative' : 'neutral';
-        
-        html += `
-            <div class="infrastructure-card ${impactClass}">
-                <h4>${item.facility}</h4>
-                <div class="facility-type">${item.type}</div>
-                <div class="impact-indicator ${impactClass}">
-                    ${item.impact === 'positive' ? '📈' : item.impact === 'negative' ? '📉' : '➡️'}
-                    Impact: ${item.impactScore > 0 ? '+' : ''}${item.impactScore}%
-                </div>
-                <p class="description">${item.description}</p>
-                <p class="recommendation"><strong>Recommendation:</strong> ${item.recommendation}</p>
-            </div>
-        `;
-    });
-    
-    html += '</div>';
     container.innerHTML = html;
 }
 

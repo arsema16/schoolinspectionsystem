@@ -405,6 +405,13 @@ exports.getSuggestions = async (req, res) => {
       const passCount = students.filter(s => (s.yearlyAverage || 0) >= 50).length;
       const passRate = (passCount / students.length) * 100;
 
+      // Calculate grade-level counts
+      const gradeCounts = {};
+      students.forEach(s => {
+        const grade = s.gradeLevel;
+        gradeCounts[grade] = (gradeCounts[grade] || 0) + 1;
+      });
+
       // Calculate subject averages
       const subjects = ['amharic', 'english', 'maths', 'physics', 'chemistry', 'biology', 'geography', 'history', 'civics', 'ict', 'hpe'];
       const subjectAverages = {};
@@ -429,6 +436,7 @@ exports.getSuggestions = async (req, res) => {
         averageMark: parseFloat(totalAvg.toFixed(2)),
         passRate: parseFloat(passRate.toFixed(2)),
         studentCount: students.length,
+        gradeCounts: gradeCounts,
         subjectAverages
       });
     }

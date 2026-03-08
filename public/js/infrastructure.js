@@ -358,19 +358,26 @@ function updateStatistics() {
         if (compliance.compliant) compliantCount++;
     });
 
-    document.getElementById('totalFacilities').textContent = totalFacilities;
-    document.getElementById('totalArea').textContent = totalArea.toFixed(0);
-    document.getElementById('totalComputers').textContent = totalComputers;
-    document.getElementById('compliantCount').textContent = `${compliantCount}/${totalFacilities}`;
+    // Check if elements exist before updating
+    const totalFacilitiesEl = document.getElementById('totalFacilities');
+    const totalAreaEl = document.getElementById('totalArea');
+    const totalComputersEl = document.getElementById('totalComputers');
+    const compliantCountEl = document.getElementById('compliantCount');
     
-    // Color code compliance
-    const complianceElement = document.getElementById('compliantCount');
-    if (compliantCount === totalFacilities) {
-        complianceElement.style.color = '#28a745'; // Green - all compliant
-    } else if (compliantCount >= totalFacilities / 2) {
-        complianceElement.style.color = '#ffc107'; // Yellow - half compliant
-    } else {
-        complianceElement.style.color = '#dc3545'; // Red - mostly non-compliant
+    if (totalFacilitiesEl) totalFacilitiesEl.textContent = totalFacilities;
+    if (totalAreaEl) totalAreaEl.textContent = totalArea.toFixed(0);
+    if (totalComputersEl) totalComputersEl.textContent = totalComputers;
+    if (compliantCountEl) {
+        compliantCountEl.textContent = `${compliantCount}/${totalFacilities}`;
+        
+        // Color code compliance
+        if (compliantCount === totalFacilities) {
+            compliantCountEl.style.color = '#28a745'; // Green - all compliant
+        } else if (compliantCount >= totalFacilities / 2) {
+            compliantCountEl.style.color = '#ffc107'; // Yellow - half compliant
+        } else {
+            compliantCountEl.style.color = '#dc3545'; // Red - mostly non-compliant
+        }
     }
 }
 
@@ -936,6 +943,12 @@ function showFacilityType(type) {
 
 function loadOverviewDetails() {
     const tbody = document.getElementById('overviewFacilitiesBody');
+    
+    // Check if element exists (not all pages have this element)
+    if (!tbody) {
+        console.log('overviewFacilitiesBody element not found - skipping overview details');
+        return;
+    }
     
     if (facilities.length === 0) {
         tbody.innerHTML = `

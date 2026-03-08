@@ -7,6 +7,7 @@ const urlsToCache = [
   '/dashboard.html',
   '/create-user.html',
   '/inspection-areas.html',
+  '/coming-soon.html',
   '/infrastructure-overview.html',
   '/infrastructure-facilities.html',
   '/infrastructure-library.html',

@@ -221,7 +221,7 @@
             </a>
 
             <!-- Learning Environment -->
-            <a href="javascript:void(0)" onclick="selectArea('learning-environment')" class="inspection-card">
+            <a href="/coming-soon.html?area=learning-environment" class="inspection-card">
                 <div class="inspection-icon">📚</div>
                 <h3>Learning Environment</h3>
                 <p>Evaluate classroom conditions, learning resources, safety, cleanliness, and overall learning atmosphere.</p>
@@ -229,7 +229,7 @@
             </a>
 
             <!-- Teaching Quality -->
-            <a href="javascript:void(0)" onclick="selectArea('teaching-quality')" class="inspection-card">
+            <a href="/coming-soon.html?area=teaching-quality" class="inspection-card">
                 <div class="inspection-icon">👨‍🏫</div>
                 <h3>Teaching Quality</h3>
                 <p>Assess teacher qualifications, teaching methods, lesson planning, and instructional effectiveness.</p>
@@ -237,7 +237,7 @@
             </a>
 
             <!-- Community Engagement -->
-            <a href="javascript:void(0)" onclick="selectArea('community-engagement')" class="inspection-card">
+            <a href="/coming-soon.html?area=community-engagement" class="inspection-card">
                 <div class="inspection-icon">👥</div>
                 <h3>Community Engagement</h3>
                 <p>Review parent involvement, community partnerships, communication, and stakeholder participation.</p>
@@ -245,7 +245,7 @@
             </a>
 
             <!-- Student Performance -->
-            <a href="javascript:void(0)" onclick="selectArea('student-performance')" class="inspection-card">
+            <a href="/dashboard.html" class="inspection-card">
                 <div class="inspection-icon">📊</div>
                 <h3>Student Performance</h3>
                 <p>Analyze academic results, attendance, behavior, and longitudinal performance trends across years.</p>
@@ -297,20 +297,6 @@
                 document.getElementById('adminSection').style.display = 'block';
             }
         });
-
-        function selectArea(area) {
-            // Store selected area
-            localStorage.setItem('selectedInspectionArea', area);
-            
-            // For now, all areas go to the dashboard
-            // In the future, each area can have its own specialized page
-            if (area === 'student-performance') {
-                window.location.href = '/dashboard.html';
-            } else {
-                // Show coming soon message for other areas
-                alert(`${area.replace('-', ' ').toUpperCase()} inspection module is under development.\n\nCurrently, only Student Performance analysis is available.`);
-            }
-        }
 
         function logout() {
             fetch(`${API_BASE}/auth/logout`, {

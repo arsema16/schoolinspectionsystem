@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coming Soon - School Inspection System</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: white;
+        }
+
+        .coming-soon-container {
+            text-align: center;
+            max-width: 600px;
+            padding: 3rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .icon {
+            font-size: 6rem;
+            margin-bottom: 2rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+
+        .btn-back {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-back:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            background: #f8f9fa;
+        }
+
+        .features {
+            margin: 2rem 0;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+        }
+
+        .features h3 {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .coming-soon-container {
+                padding: 2rem 1.5rem;
+                margin: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.2rem;
+            }
+
+            .icon {
+                font-size: 4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="coming-soon-container">
+        <div class="icon" id="areaIcon">🚧</div>
+        <h1>Coming Soon</h1>
+        <h2 id="areaTitle">This Feature is Under Development</h2>
+        <p id="areaDescription">
+            We're working hard to bring you this inspection area. Check back soon for updates!
+        </p>
+
+        <div class="features">
+            <h3>What to Expect:</h3>
+            <ul id="featuresList">
+                <li>Comprehensive inspection tools</li>
+                <li>Detailed reporting and analytics</li>
+                <li>Data-driven insights</li>
+                <li>Easy-to-use interface</li>
+            </ul>
+        </div>
+
+        <a href="/inspection-areas.html" class="btn-back">← Back to Inspection Areas</a>
+    </div>
+
+    <script>
+        // Get area from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const area = urlParams.get('area');
+
+        const areaConfig = {
+            'learning-environment': {
+                icon: '📚',
+                title: 'Learning Environment',
+                description: 'Assess classroom atmosphere, learning resources, student engagement, and educational support systems.',
+                features: [
+                    'Classroom environment assessment',
+                    'Learning resource evaluation',
+                    'Student engagement metrics',
+                    'Educational support analysis'
+                ]
+            },
+            'teaching-quality': {
+                icon: '👨‍🏫',
+                title: 'Teaching Quality',
+                description: 'Evaluate teaching methods, lesson planning, teacher qualifications, and instructional effectiveness.',
+                features: [
+                    'Teacher performance evaluation',
+                    'Lesson plan review',
+                    'Teaching methodology assessment',
+                    'Professional development tracking'
+                ]
+            },
+            'community-engagement': {
+                icon: '👥',
+                title: 'Community Engagement',
+                description: 'Monitor parent involvement, community partnerships, stakeholder communication, and school-community relations.',
+                features: [
+                    'Parent involvement tracking',
+                    'Community partnership management',
+                    'Stakeholder communication logs',
+                    'Event and meeting records'
+                ]
+            },
+            'student-performance': {
+                icon: '📊',
+                title: 'Student Performance',
+                description: 'This feature is already available! Go back and access the dashboard to view student performance data.',
+                features: [
+                    'Academic performance analytics',
+                    'Grade trends and predictions',
+                    'Subject-wise analysis',
+                    'Student progress tracking'
+                ]
+            }
+        };
+
+        if (area && areaConfig[area]) {
+            const config = areaConfig[area];
+            document.getElementById('areaIcon').textContent = config.icon;
+            document.getElementById('areaTitle').textContent = config.title;
+            document.getElementById('areaDescription').textContent = config.description;
+            
+            const featuresList = document.getElementById('featuresList');
+            featuresList.innerHTML = config.features.map(f => `<li>${f}</li>`).join('');
+        }
+    </script>
+</body>
+</html>

@@ -79,6 +79,10 @@ function saveFacilitiesToStorage() {
 function renderFilteredFacilities() {
     const content = document.getElementById('filteredContent');
     
+    console.log('=== Rendering Filtered Facilities ===');
+    console.log('Filter Type:', filterType);
+    console.log('Total Facilities:', facilities.length);
+    
     // Filter facilities based on type
     let filtered = facilities.filter(f => {
         if (filterType === 'laboratory') {
@@ -93,6 +97,8 @@ function renderFilteredFacilities() {
         return false;
     });
     
+    console.log('Filtered Facilities:', filtered.length);
+    
     if (filtered.length === 0) {
         content.innerHTML = `
             <p style="text-align: center; padding: 2rem; color: #999;">
@@ -105,12 +111,15 @@ function renderFilteredFacilities() {
     content.innerHTML = filtered.map(facility => {
         const compliance = checkCompliance(facility);
         const rating = calculateRating(facility, compliance);
+        
+        console.log(`Rating for ${facility.name}:`, rating);
+        
         return `
             <div style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
                     <h4 style="color: #667eea; margin: 0;">${facility.name}</h4>
-                    <div style="text-align: right;">
-                        <div style="font-size: 1.5rem; color: ${rating.color}; font-weight: bold;">${rating.stars}</div>
+                    <div style="text-align: right; min-width: 150px;">
+                        <div style="font-size: 1.5rem; font-weight: bold;">${rating.stars}</div>
                         <div style="font-size: 0.9rem; color: ${rating.color}; font-weight: 600;">${rating.grade} - ${rating.label}</div>
                         <div style="font-size: 0.85rem; color: #666;">${rating.score}/100</div>
                     </div>
@@ -139,6 +148,8 @@ function renderFilteredFacilities() {
             </div>
         `;
     }).join('');
+    
+    console.log('=== Rendering Complete ===');
 }
 
 function checkCompliance(facility) {

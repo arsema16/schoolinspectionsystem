@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Rating</title>
+</head>
+<body>
+    <h1>Testing Rating System</h1>
+    <div id="output"></div>
+    
+    <script>
+        // Copy the rating function
+        function calculateRating(facility, compliance) {
+            let score = 0;
+            const standards = {
+                'laboratory': { minArea: 60, minCapacity: 30 },
+                'classroom': { minArea: 50, minCapacity: 40 },
+                'computer-lab': { minArea: 60, minCapacity: 30 },
+                'office': { minArea: 15, minCapacity: 2 },
+            };
+            const standard = standards[facility.type] || { minArea: 20, minCapacity: 10 };
+            
+            // Area score (40 points max)
+            const areaRatio = facility.area / standard.minArea;
+            if (areaRatio >= 1) {
+                score += 40;
+            } else {
+                score += Math.floor(40 * areaRatio);
+            }
+            
+            // Capacity score (20 points max)
+            if (facility.capacity) {
+                const capacityRatio = facility.capacity / standard.minCapacity;
+                if (capacityRatio >= 1) {
+                    score += 20;
+                } else {
+                    score += Math.floor(20 * capacityRatio);
+                }
+            } else {
+                score += 10;
+            }
+            
+            // Condition score (30 points max)
+            const conditionScores = {
+                'Excellent': 30,
+                'Good': 25,
+                'Fair': 15,
+                'Poor': 5,
+                'Critical': 0
+            };
+            score += conditionScores[facility.condition] || 15;
+            
+            // Equipment score (10 points max)
+            if (facility.type === 'computer-lab' || facility.type === 'office') {
+                if (facility.computers > 0) {
+                    score += 10;
+                }
+            } else {
+                score += 10;
+            }
+            
+            // Determine grade and label
+            let grade, label, color, stars;
+            
+            if (score >= 90) {
+                grade = 'A+';
+                label = 'Excellent';
+                color = '#28a745';
+                stars = '⭐⭐⭐⭐⭐';
+            } else if (score >= 80) {
+                grade = 'A';
+                label = 'Very Good';
+                color = '#5cb85c';
+                stars = '⭐⭐⭐⭐';
+            } else if (score >= 70) {
+                grade = 'B';
+                label = 'Good';
+                color = '#5bc0de';
+                stars = '⭐⭐⭐';
+            } else if (score >= 60) {
+                grade = 'C';
+                label = 'Satisfactory';
+                color = '#f0ad4e';
+                stars = '⭐⭐';
+            } else if (score >= 50) {
+                grade = 'D';
+                label = 'Needs Improvement';
+                color = '#ff9800';
+                stars = '⭐';
+            } else {
+                grade = 'F';
+                label = 'Poor';
+                color = '#dc3545';
+                stars = '☆';
+            }
+            
+            return { score, grade, label, color, stars };
+        }
+        
+        // Test with a laboratory
+        const testFacility = {
+            name: 'Laboratory',
+            area: 62,
+            capacity: 40,
+            condition: 'Good',
+            computers: 0,
+            type: 'laboratory'
+        };
+        
+        const rating = calculateRating(testFacility, {});
+        
+        document.getElementById('output').innerHTML = `
+            <h2>Test Facility: ${testFacility.name}</h2>
+            <p>Stars: ${rating.stars}</p>
+            <p>Grade: ${rating.grade}</p>
+            <p>Label: ${rating.label}</p>
+            <p>Score: ${rating.score}/100</p>
+            <p>Color: ${rating.color}</p>
+        `;
+        
+        console.log('Rating:', rating);
+    </script>
+</body>
+</html>

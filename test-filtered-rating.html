@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Filtered Rating</title>
+</head>
+<body>
+    <h1>Test Filtered Rating System</h1>
+    <div id="filteredContent"></div>
+    
+    <script>
+        // Simulate the filtered page environment
+        const filterType = 'laboratory';
+        const facilities = [
+            { id: '2', name: 'Laboratory', area: 62, capacity: 40, condition: 'Good', computers: 0, notes: '', type: 'laboratory' }
+        ];
+        
+        function getStandards() {
+            return {
+                'laboratory': { minArea: 60, minCapacity: 30 }
+            };
+        }
+        
+        function checkCompliance(facility) {
+            const standards = getStandards();
+            const issues = [];
+            let compliant = true;
+            const standard = standards[facility.type];
+            
+            if (facility.area < standard.minArea) {
+                issues.push(`Area too small`);
+                compliant = false;
+            }
+            
+            if (facility.capacity && facility.capacity < standard.minCapacity) {
+                issues.push(`Capacity below standard`);
+                compliant = false;
+            }
+            
+            return { compliant, issues };
+        }
+        
+        function calculateRating(facility, compliance) {
+            let score = 0;
+            const standards = getStandards();
+            const standard = standards[facility.type];
+            
+            // Area score (40 points)
+            const areaRatio = facility.area / standard.minArea;
+            score += areaRatio >= 1 ? 40 : Math.floor(40 * areaRatio);
+            
+            // Capacity score (20 points)
+            if (facility.capacity) {
+                const capacityRatio = facility.capacity / standard.minCapacity;
+                score += capacityRatio >= 1 ? 20 : Math.floor(20 * capacityRatio);
+            } else {
+                score += 10;
+            }
+            
+            // Condition score (30 points)
+            const conditionScores = {
+                'Excellent': 30, 'Good': 25, 'Fair': 15, 'Poor': 5, 'Critical': 0
+            };
+            score += conditionScores[facility.condition] || 15;
+            
+            // Equipment score (10 points)
+            score += 10;
+            
+            // Determine grade
+            let grade, label, color, stars;
+            if (score >= 90) {
+                grade = 'A+'; label = 'Excellent'; color = '#28a745'; stars = '⭐⭐⭐⭐⭐';
+            } else if (score >= 80) {
+                grade = 'A'; label = 'Very Good'; color = '#5cb85c'; stars = '⭐⭐⭐⭐';
+            } else if (score >= 70) {
+                grade = 'B'; label = 'Good'; color = '#5bc0de'; stars = '⭐⭐⭐';
+            } else {
+                grade = 'C'; label = 'Satisfactory'; color = '#f0ad4e'; stars = '⭐⭐';
+            }
+            
+            return { score, grade, label, color, stars };
+        }
+        
+        function getConditionColor(condition) {
+            return condition === 'Good' ? '#28a745' : '#666';
+        }
+        
+        // Render
+        const content = document.getElementById('filteredContent');
+        const facility = facilities[0];
+        const compliance = checkCompliance(facility);
+        const rating = calculateRating(facility, compliance);
+        
+        console.log('Rating:', rating);
+        
+        content.innerHTML = `
+            <div style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
+                    <h4 style="color: #667eea; margin: 0;">${facility.name}</h4>
+                    <div style="text-align: right; min-width: 150px;">
+                        <div style="font-size: 1.5rem; font-weight: bold;">${rating.stars}</div>
+                        <div style="font-size: 0.9rem; color: ${rating.color}; font-weight: 600;">${rating.grade} - ${rating.label}</div>
+                        <div style="font-size: 0.85rem; color: #666;">${rating.score}/100</div>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div><strong>Area:</strong> ${facility.area} ካሬ</div>
+                    <div><strong>Capacity:</strong> ${facility.capacity} people</div>
+                    <div><strong>Condition:</strong> <span style="color: ${getConditionColor(facility.condition)}">${facility.condition}</span></div>
+                    <div><strong>Computers:</strong> ${facility.computers || 0}</div>
+                </div>
+            </div>
+        `;
+    </script>
+</body>
+</html>

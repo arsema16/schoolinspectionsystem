@@ -61,7 +61,7 @@ async function loadFacilities() {
 
 function getDefaultFacilities() {
     return [
-        { id: '1', name: 'Library', area: 10, capacity: 30, condition: 'Good', computers: 0, notes: '', type: 'library' },
+        { id: '1', name: 'Library', area: 110, capacity: 30, condition: 'Good', computers: 0, notes: '', type: 'library' },
         { id: '2', name: 'Laboratory', area: 62, capacity: 40, condition: 'Good', computers: 0, notes: '', type: 'laboratory' },
         { id: '3', name: 'Learning Class', area: 56, capacity: 45, condition: 'Good', computers: 0, notes: '', type: 'classroom' },
         { id: '4', name: 'Pedagogue Center', area: 72, capacity: 50, condition: 'Good', computers: 0, notes: '', type: 'special' },

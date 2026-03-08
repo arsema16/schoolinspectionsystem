@@ -633,17 +633,48 @@ function calculateLibraryRating(library, compliance, totalBooks) {
         return { score: 0, grade: 'F', label: 'Error', color: '#dc3545', stars: '☆' };
     }
     
-    // Area score (30 points)
-    const areaRatio = library.area / standard.minArea;
-    score += areaRatio >= 1 ? 30 : Math.floor(30 * areaRatio);
+    // Get total number of students from localStorage (approximate from latest year data)
+    const totalStudents = 210; // Approximate: 55+54+55+46 from grades 9-12
     
-    // Capacity score (15 points) - use 50 as minimum capacity standard
-    const minCapacity = 50;
-    if (library.capacity) {
-        const capacityRatio = library.capacity / minCapacity;
-        score += capacityRatio >= 1 ? 15 : Math.floor(15 * capacityRatio);
+    // Area score (25 points) - Based on area per student
+    // Standard: 0.5 sqm per student minimum for library
+    const areaPerStudent = library.area / totalStudents;
+    const minAreaPerStudent = 0.5;
+    if (areaPerStudent >= minAreaPerStudent) {
+        score += 25;
     } else {
-        score += 7;
+        score += Math.floor(25 * (areaPerStudent / minAreaPerStudent));
+    }
+    
+    // Also check minimum total area (100 sqm)
+    if (library.area < standard.minArea) {
+        score -= 5; // Penalty for not meeting minimum area
+    }
+    
+    // Books per student score (30 points)
+    // Standard: At least 10 books per student is excellent
+    const booksPerStudent = totalBooks / totalStudents;
+    if (booksPerStudent >= 10) {
+        score += 30; // Excellent: 10+ books per student
+    } else if (booksPerStudent >= 7) {
+        score += 25; // Very Good: 7-9 books per student
+    } else if (booksPerStudent >= 5) {
+        score += 20; // Good: 5-6 books per student
+    } else if (booksPerStudent >= 3) {
+        score += 15; // Satisfactory: 3-4 books per student
+    } else if (booksPerStudent >= 1) {
+        score += 10; // Poor: 1-2 books per student
+    } else {
+        score += 5; // Critical: Less than 1 book per student
+    }
+    
+    // Seating capacity score (20 points)
+    // Standard: 10% of students should be able to use library at once
+    const minSeats = Math.ceil(totalStudents * 0.1); // 10% of students
+    if (library.capacity >= minSeats) {
+        score += 20;
+    } else {
+        score += Math.floor(20 * (library.capacity / minSeats));
     }
     
     // Condition score (25 points)
@@ -656,18 +687,8 @@ function calculateLibraryRating(library, compliance, totalBooks) {
     };
     score += conditionScores[library.condition] || 12;
     
-    // Book collection score (30 points) - based on number of books
-    if (totalBooks >= 2000) {
-        score += 30;
-    } else if (totalBooks >= 1500) {
-        score += 25;
-    } else if (totalBooks >= 1000) {
-        score += 20;
-    } else if (totalBooks >= 500) {
-        score += 15;
-    } else {
-        score += 10;
-    }
+    // Ensure score doesn't exceed 100
+    score = Math.min(score, 100);
     
     // Determine grade and label
     let grade, label, color, stars;
@@ -703,6 +724,17 @@ function calculateLibraryRating(library, compliance, totalBooks) {
         color = '#dc3545';
         stars = '☆';
     }
+    
+    console.log('Library Rating Calculation:', {
+        totalStudents,
+        totalBooks,
+        booksPerStudent: booksPerStudent.toFixed(1),
+        areaPerStudent: areaPerStudent.toFixed(2),
+        capacity: library.capacity,
+        minSeats,
+        score,
+        grade
+    });
     
     return { score, grade, label, color, stars };
 }

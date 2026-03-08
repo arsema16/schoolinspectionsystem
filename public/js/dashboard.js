@@ -17,6 +17,16 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDashboardData();
     setupYearFilterHandler();
     showAdminSection();
+    
+    // Scroll to admin section if hash is present
+    if (window.location.hash === '#adminSection') {
+        setTimeout(() => {
+            const adminSection = document.getElementById('adminSection');
+            if (adminSection) {
+                adminSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 500); // Wait for content to load
+    }
 });
 
 // Listen for messages from child windows (e.g., Student Manager)

@@ -104,9 +104,17 @@ function renderFilteredFacilities() {
     
     content.innerHTML = filtered.map(facility => {
         const compliance = checkCompliance(facility);
+        const rating = calculateRating(facility, compliance);
         return `
             <div style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                <h4 style="color: #667eea; margin-bottom: 1rem;">${facility.name}</h4>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h4 style="color: #667eea; margin: 0;">${facility.name}</h4>
+                    <div style="text-align: right;">
+                        <div style="font-size: 1.5rem; color: ${rating.color}; font-weight: bold;">${rating.stars}</div>
+                        <div style="font-size: 0.9rem; color: ${rating.color}; font-weight: 600;">${rating.grade} - ${rating.label}</div>
+                        <div style="font-size: 0.85rem; color: #666;">${rating.score}/100</div>
+                    </div>
+                </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
                     <div>
                         <strong>Area:</strong> ${facility.area} ካሬ
@@ -156,6 +164,88 @@ function checkCompliance(facility) {
     }
 
     return { compliant, issues };
+}
+
+function calculateRating(facility, compliance) {
+    let score = 0;
+    const standards = getStandards();
+    const standard = standards[facility.type] || standards['general'];
+    
+    // Area score (40 points max)
+    const areaRatio = facility.area / standard.minArea;
+    if (areaRatio >= 1) {
+        score += 40;
+    } else {
+        score += Math.floor(40 * areaRatio);
+    }
+    
+    // Capacity score (20 points max)
+    if (facility.capacity) {
+        const capacityRatio = facility.capacity / standard.minCapacity;
+        if (capacityRatio >= 1) {
+            score += 20;
+        } else {
+            score += Math.floor(20 * capacityRatio);
+        }
+    } else {
+        score += 10; // Partial credit if capacity not specified
+    }
+    
+    // Condition score (30 points max)
+    const conditionScores = {
+        'Excellent': 30,
+        'Good': 25,
+        'Fair': 15,
+        'Poor': 5,
+        'Critical': 0
+    };
+    score += conditionScores[facility.condition] || 15;
+    
+    // Equipment score (10 points max) - for computer labs and offices
+    if (facility.type === 'computer-lab' || facility.type === 'office') {
+        if (facility.computers > 0) {
+            score += 10;
+        }
+    } else {
+        score += 10; // Full credit for non-computer facilities
+    }
+    
+    // Determine grade and label
+    let grade, label, color, stars;
+    
+    if (score >= 90) {
+        grade = 'A+';
+        label = 'Excellent';
+        color = '#28a745';
+        stars = '⭐⭐⭐⭐⭐';
+    } else if (score >= 80) {
+        grade = 'A';
+        label = 'Very Good';
+        color = '#5cb85c';
+        stars = '⭐⭐⭐⭐';
+    } else if (score >= 70) {
+        grade = 'B';
+        label = 'Good';
+        color = '#5bc0de';
+        stars = '⭐⭐⭐';
+    } else if (score >= 60) {
+        grade = 'C';
+        label = 'Satisfactory';
+        color = '#f0ad4e';
+        stars = '⭐⭐';
+    } else if (score >= 50) {
+        grade = 'D';
+        label = 'Needs Improvement';
+        color = '#ff9800';
+        stars = '⭐';
+    } else {
+        grade = 'F';
+        label = 'Poor';
+        color = '#dc3545';
+        stars = '☆';
+    }
+    
+    return { score, grade, label, color, stars };
 }
 
 function getStandards() {

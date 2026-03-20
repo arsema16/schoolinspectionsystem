@@ -15,7 +15,8 @@ const studentSchema = new mongoose.Schema({
   year: { 
     type: Number, 
     required: true,
-    enum: [2015, 2016, 2017, 2018],
+    min: 2010,
+    max: 2030,
     index: true
   },
   
@@ -58,7 +59,7 @@ const studentSchema = new mongoose.Schema({
   age: { 
     type: Number,
     min: 5,
-    max: 25,
+    max: 35,
     required: true
   },
   ageGroup: {

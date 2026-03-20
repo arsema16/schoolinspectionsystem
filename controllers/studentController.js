@@ -190,7 +190,7 @@ exports.uploadExcel = async (req, res) => {
           });
           imported++;
         } catch (err) {
-          console.error('Student create error:', err.message);
+          console.error(`Failed to import ${studentId}:`, err.message);
           failed++;
         }
       }
@@ -212,7 +212,15 @@ exports.uploadExcel = async (req, res) => {
       userAgent: req.get('user-agent')
     });
 
-    res.json({ message: "Excel file imported successfully", filename: req.file.originalname, year, imported, failed, duplicates });
+    res.json({ 
+      message: "Excel file imported successfully", 
+      filename: req.file.originalname, 
+      year, 
+      imported, 
+      failed, 
+      duplicates,
+      note: failed > 0 ? `${failed} records failed - check server logs for details` : undefined
+    });
 
   } catch (error) {
     console.error('Upload Excel error:', error);

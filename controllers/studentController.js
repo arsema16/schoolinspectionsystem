@@ -136,32 +136,48 @@ exports.uploadExcel = async (req, res) => {
       return res.status(400).json({ message: "Valid year (2010-2030) is required" });
     }
 
+    // Log all sheet names for debugging
+    console.log('Sheet names:', workbook.SheetNames);
+
     // Group sheets by class code e.g. "9A", "10B"
     const classSheetsMap = {};
     for (const sheetName of workbook.SheetNames) {
       const classMatch = sheetName.match(/(\d{1,2}[A-Z])/i);
-      if (!classMatch) continue;
+      if (!classMatch) {
+        console.log(`Skipping sheet (no class match): "${sheetName}"`);
+        continue;
+      }
       const classCode = classMatch[1].toUpperCase();
       if (!classSheetsMap[classCode]) classSheetsMap[classCode] = {};
       const lower = sheetName.toLowerCase();
-      if (lower.includes('sem 1') || lower.includes('sem1')) classSheetsMap[classCode].sem1 = sheetName;
-      else if (lower.includes('sem 2') || lower.includes('sem2')) classSheetsMap[classCode].sem2 = sheetName;
-      else if (lower.includes('avr') || lower.includes('average')) classSheetsMap[classCode].avg = sheetName;
+      if (lower.includes('sem 1') || lower.includes('sem1')) {
+        classSheetsMap[classCode].sem1 = sheetName;
+      } else if (lower.includes('sem 2') || lower.includes('sem2')) {
+        classSheetsMap[classCode].sem2 = sheetName;
+      } else if (lower.includes('avr') || lower.includes('average') || lower.includes('avg')) {
+        classSheetsMap[classCode].avg = sheetName;
+      }
     }
+
+    console.log('Classes found:', Object.keys(classSheetsMap));
+    console.log('Class sheets map:', JSON.stringify(classSheetsMap, null, 2));
 
     let imported = 0, failed = 0, duplicates = 0;
 
     for (const [classCode, sheets] of Object.entries(classSheetsMap)) {
-      if (!sheets.sem1 || !sheets.sem2 || !sheets.avg) continue;
+      if (!sheets.sem1 || !sheets.sem2 || !sheets.avg) {
+        console.log(`Skipping class ${classCode}: missing sheets`, sheets);
+        continue;
+      }
       const gradeMatch = classCode.match(/^(\d+)/);
       const gradeLevel = gradeMatch ? parseInt(gradeMatch[1]) : null;
-      const section = classCode.replace(/^\d+/, '') || 'A';
-      if (!gradeLevel) continue;
+      if (!gradeLevel) { console.log(`Skipping class ${classCode}: no grade level`); continue; }
 
       const sem1Data = readSheetData(workbook.Sheets[sheets.sem1], xlsx);
       const sem2Data = readSheetData(workbook.Sheets[sheets.sem2], xlsx);
       const avgData  = readSheetData(workbook.Sheets[sheets.avg], xlsx);
       const count = Math.max(sem1Data.length, sem2Data.length, avgData.length);
+      console.log(`Class ${classCode}: sem1=${sem1Data.length}, sem2=${sem2Data.length}, avg=${avgData.length}`);
 
       for (let i = 0; i < count; i++) {
         const s1 = sem1Data[i];
@@ -182,7 +198,6 @@ exports.uploadExcel = async (req, res) => {
             age: base.age,
             gender: (base.sex === 'M' || base.sex === 'Male') ? 'Male' : 'Female',
             gradeLevel,
-            section,
             semester1: s1 ? s1.subjects : {},
             semester2: s2 ? s2.subjects : {},
             yearlyAverage: avg ? avg.yearlyAverage : null,
@@ -197,7 +212,11 @@ exports.uploadExcel = async (req, res) => {
     }
 
     if (imported === 0 && duplicates === 0 && failed === 0) {
-      return res.status(400).json({ message: "No valid student data found. Check your Excel file format." });
+      return res.status(400).json({ 
+        message: "No valid student data found. Check your Excel file format.",
+        sheetsFound: workbook.SheetNames,
+        classesDetected: Object.keys(classSheetsMap)
+      });
     }
 
     await auditLogger.logEvent({

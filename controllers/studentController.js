@@ -49,7 +49,7 @@ function parseRosterSheet(sheet) {
     name:      getCol(['student name', 'name']),
     age:       getCol(['age']),
     sex:       getCol(['sex', 'gender']),
-    semester:  getCol(['semester']),
+    semester:  getCol(['semester']) !== -1 ? getCol(['semester']) : 4, // fallback to col 4
     amharic:   getCol(['amharic']),
     english:   getCol(['english']),
     maths:     getCol(['maths', 'math']),

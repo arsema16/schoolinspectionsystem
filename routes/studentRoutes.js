@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const {
-  importStudents,
   uploadExcel,
   uploadMiddleware,
   getStudents,
@@ -13,9 +12,6 @@ const { protect, requireAdmin } = require("../middleware/authMiddleware");
 
 // Upload Excel file - Admin only
 router.post("/upload", protect, requireAdmin, uploadMiddleware, uploadExcel);
-
-// Import students - Admin only
-router.post("/import", protect, requireAdmin, importStudents);
 
 // Get students with filtering - Admin and Inspector
 router.get("/", protect, getStudents);

@@ -211,6 +211,14 @@ exports.uploadExcel = async (req, res) => {
       });
     }
 
+    if (imported === 0 && duplicates > 0) {
+      return res.json({
+        message: `All ${duplicates} students already exist in the database for year ${year}. No new records added.`,
+        filename: req.file.originalname,
+        year, imported: 0, failed, duplicates
+      });
+    }
+
     await auditLogger.logEvent({
       action: 'CREATE', entityType: 'Student',
       entityId: `excel_import_${year}`,

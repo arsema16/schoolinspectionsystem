@@ -39,13 +39,7 @@ exports.importStudents = async (req, res) => {
 
     if (![2015, 2016, 2017, 2018].includes(year)) {
       return res.status(400).json({ 
-        message: "Year must be 2015, 2016, 2017, or 2018" 
-      });
-    }
-
-    if (students.length === 0) {
-      return res.status(400).json({ 
-        message: "Students array cannot be empty" 
+        message: "Year must be between 2010 and 2030" 
       });
     }
 
@@ -107,9 +101,9 @@ exports.uploadExcel = async (req, res) => {
       }
     }
     
-    if (!year || ![2015, 2016, 2017, 2018].includes(year)) {
+    if (!year || year < 2010 || year > 2030) {
       return res.status(400).json({ 
-        message: "Valid year (2015-2018) is required. Include year in filename or request body." 
+        message: "Valid year between 2010 and 2030 is required." 
       });
     }
 

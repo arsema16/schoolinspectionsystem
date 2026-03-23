@@ -888,7 +888,7 @@ async function uploadStudentData() {
     
     // Wake up the server first (Render free tier spins down when idle)
     try {
-        await fetch(`${API_BASE}/auth/me`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+        await fetch(`${API_BASE}/users/me`, { headers: { 'Authorization': `Bearer ${authToken}` } });
     } catch(e) { /* ignore */ }
     
     statusDiv.innerHTML = '<div class="loading">Uploading and importing data... (this may take up to 60 seconds)</div>';

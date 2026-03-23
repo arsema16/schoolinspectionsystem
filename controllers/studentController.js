@@ -156,54 +156,36 @@ exports.uploadExcel = async (req, res) => {
     console.log(`Importing year ${year}, sheets:`, workbook.SheetNames);
 
     let imported = 0, failed = 0, duplicates = 0;
+    const toInsert = [];
 
     for (const sheetName of workbook.SheetNames) {
-      // Only process Roster sheets - they contain all data
       if (!sheetName.toLowerCase().includes('roster')) continue;
-
-      // Extract class code e.g. "9A", "11A", "12B"
-      const classMatch = sheetName.match(/Grade\s*(\d{1,2}[A-Z])/i) || sheetName.match(/Roster\s*(\d{1,2}[A-Z])/i);
-      if (!classMatch) {
-        console.log(`Skipping roster sheet, no class found: "${sheetName}"`);
-        continue;
-      }
-
+      const classMatch = sheetName.match(/Roster\s*(\d{1,2}[A-Z])/i);
+      if (!classMatch) continue;
       const classCode = classMatch[1].toUpperCase();
-      const gradeMatch = classCode.match(/^(\d+)/);
-      const gradeLevel = gradeMatch ? parseInt(gradeMatch[1]) : null;
-      if (!gradeLevel) continue;
+      const gradeLevel = parseInt(classCode.match(/^(\d+)/)[1]);
 
       const students = parseRosterSheet(workbook.Sheets[sheetName]);
-      console.log(`Sheet "${sheetName}" (${classCode}): ${students.length} students parsed`);
+      console.log(`Sheet "${sheetName}" (${classCode}): ${students.length} students`);
 
       for (const s of students) {
         const studentId = `STU-${year}-${classCode}-${String(s.no).padStart(3, '0')}`;
-
-        const exists = await Student.findOne({ studentId, year });
-        if (exists) { duplicates++; continue; }
-
-        try {
-          await Student.create({
-            studentId,
-            name: s.name || `Student ${s.no}`,
-            year,
-            age: s.age,
-            gender: (s.sex === 'M' || s.sex === 'Male') ? 'Male' : 'Female',
-            gradeLevel,
-            semester1: s.semester1 || {},
-            semester2: s.semester2 || {},
-            yearlyAverage: s.yearlyAverage,
-            rank: s.rank
-          });
-          imported++;
-        } catch (err) {
-          console.error(`Failed ${studentId}:`, err.message);
-          failed++;
-        }
+        toInsert.push({
+          studentId,
+          name: s.name || `Student ${s.no}`,
+          year,
+          age: s.age,
+          gender: (s.sex === 'M' || s.sex === 'Male') ? 'Male' : 'Female',
+          gradeLevel,
+          semester1: s.semester1 || {},
+          semester2: s.semester2 || {},
+          yearlyAverage: s.yearlyAverage,
+          rank: s.rank
+        });
       }
     }
 
-    if (imported === 0 && duplicates === 0) {
+    if (toInsert.length === 0) {
       return res.status(400).json({
         message: "No valid student data found.",
         hint: "Make sure your Excel file has sheets named like 'Roster 9A', 'Roster 10B', etc.",
@@ -211,12 +193,19 @@ exports.uploadExcel = async (req, res) => {
       });
     }
 
-    if (imported === 0 && duplicates > 0) {
-      return res.json({
-        message: `All ${duplicates} students already exist in the database for year ${year}. No new records added.`,
-        filename: req.file.originalname,
-        year, imported: 0, failed, duplicates
-      });
+    // Use insertMany with ordered:false to skip duplicates and continue
+    try {
+      const result = await Student.insertMany(toInsert, { ordered: false });
+      imported = result.length;
+    } catch (err) {
+      // ordered:false means it inserts what it can and collects errors
+      if (err.insertedDocs) imported = err.insertedDocs.length;
+      if (err.writeErrors) {
+        err.writeErrors.forEach(e => {
+          if (e.code === 11000) duplicates++;
+          else failed++;
+        });
+      }
     }
 
     await auditLogger.logEvent({

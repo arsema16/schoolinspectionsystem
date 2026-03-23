@@ -34,11 +34,11 @@ function parseRosterSheet(sheet) {
   }
   if (headerIdx === -1) return [];
 
-  const headers = data[headerIdx].map(h => String(h || '').trim().toLowerCase());
+  const headers = data[headerIdx].map(h => h != null ? String(h).trim().toLowerCase() : '');
 
   const getCol = (names) => {
     for (const name of names) {
-      const idx = headers.findIndex(h => h.includes(name.toLowerCase()));
+      const idx = headers.findIndex(h => h && h.includes(name.toLowerCase()));
       if (idx !== -1) return idx;
     }
     return -1;

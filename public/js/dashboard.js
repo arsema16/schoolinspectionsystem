@@ -884,16 +884,28 @@ async function uploadStudentData() {
     formData.append('file', file);
     formData.append('year', year);
     
-    statusDiv.innerHTML = '<div class="loading">Uploading and importing data...</div>';
+    statusDiv.innerHTML = '<div class="loading">Connecting to server...</div>';
+    
+    // Wake up the server first (Render free tier spins down when idle)
+    try {
+        await fetch(`${API_BASE}/auth/me`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+    } catch(e) { /* ignore */ }
+    
+    statusDiv.innerHTML = '<div class="loading">Uploading and importing data... (this may take up to 60 seconds)</div>';
     
     try {
-        const response = await fetch(`${API_BASE}/students/upload`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            },
-            body: formData
-        });
+        let response;
+        // Retry up to 3 times on 502 (server cold start)
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            response = await fetch(`${API_BASE}/students/upload`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${authToken}` },
+                body: formData
+            });
+            if (response.status !== 502) break;
+            statusDiv.innerHTML = `<div class="loading">Server warming up, retrying... (attempt ${attempt}/3)</div>`;
+            await new Promise(r => setTimeout(r, 5000));
+        }
         
         if (response.status === 401) {
             handleUnauthorized();

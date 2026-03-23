@@ -208,14 +208,15 @@ exports.uploadExcel = async (req, res) => {
       }
     }
 
-    await auditLogger.logEvent({
+    // Audit log - don't let it block the response
+    auditLogger.logEvent({
       action: 'CREATE', entityType: 'Student',
       entityId: `excel_import_${year}`,
       userId: req.user.id, username: req.user.username, userRole: req.user.role,
       changes: { after: { year, filename: req.file.originalname, imported, failed, duplicates } },
       ipAddress: req.ip || req.connection.remoteAddress,
       userAgent: req.get('user-agent')
-    });
+    }).catch(e => console.error('Audit log error:', e));
 
     res.json({
       message: "Import complete",

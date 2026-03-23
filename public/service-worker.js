@@ -1,4 +1,4 @@
-const CACHE_NAME = 'school-inspection-v5';
+const CACHE_NAME = 'school-inspection-v6';
 const urlsToCache = [
   '/',
   '/index.html',

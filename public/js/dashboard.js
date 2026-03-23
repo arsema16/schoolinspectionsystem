@@ -901,8 +901,11 @@ async function uploadStudentData() {
         }
         
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Import failed');
+            const text = await response.text();
+            console.error('Upload response:', response.status, text);
+            let msg = 'Import failed';
+            try { msg = JSON.parse(text).message || msg; } catch(e) {}
+            throw new Error(msg);
         }
         
         const data = await response.json();
@@ -927,7 +930,7 @@ async function uploadStudentData() {
         
     } catch (error) {
         console.error('Import error:', error);
-        statusDiv.innerHTML = `<div class="error">Import failed: ${error.message}</div>`;
+        statusDiv.innerHTML = `<div class="error">Import failed: ${error.message}<br><small>Check browser console for details</small></div>`;
     }
 }
 

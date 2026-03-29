@@ -8,6 +8,7 @@ const teachers = [
   // Grade 11 & 12
   {
     teacherName: 'Ato Samuel Girma', subject: 'Math', gradeGroup: '11-12', improvementRate: 95,
+    performanceScore: 92, teachingMethodology: 'Problem-Based', professionalDevelopment: 'Advanced Calculus Workshop',
     lessonPlans: [
       { year: 2015, topic: 'Grade 11 Algebra & Functions', gradeLevel: 'Grade 11', status: 'Approved', feedback: 'Well-structured, clear objectives.' },
       { year: 2016, topic: 'Grade 11 & 12 Trigonometry', gradeLevel: 'Grade 11 & 12', status: 'Approved', feedback: 'Strong focus on problem-solving.' },
@@ -16,6 +17,7 @@ const teachers = [
   },
   {
     teacherName: 'W/ro Helina Belay', subject: 'English', gradeGroup: '11-12', improvementRate: 80,
+    performanceScore: 85, teachingMethodology: 'Communicative', professionalDevelopment: 'English Proficiency Level C1',
     lessonPlans: [
       { year: 2015, topic: 'Grade 11 English Grammar & Composition', gradeLevel: 'Grade 11', status: 'Needs Revision', feedback: 'More interactive activities needed.' },
       { year: 2016, topic: 'Grade 12 Literature: African Authors', gradeLevel: 'Grade 12', status: 'Approved', feedback: 'Improved student engagement, diverse texts.' },
@@ -24,6 +26,7 @@ const teachers = [
   },
   {
     teacherName: 'Ato Dawit Tesfaye', subject: 'Chemistry', gradeGroup: '11-12', improvementRate: 82,
+    performanceScore: 78, teachingMethodology: 'Lab-Integrated', professionalDevelopment: 'Chemical Safety Training',
     lessonPlans: [
       { year: 2015, topic: 'Grade 11 Basic Organic Chemistry', gradeLevel: 'Grade 11', status: 'Approved', feedback: 'Good lab safety focus.' },
       { year: 2016, topic: 'Grade 12 Electrochemistry & Reaction Kinetics', gradeLevel: 'Grade 12', status: 'Needs Revision', feedback: 'Missing detailed lab experiment procedures.' },
@@ -32,6 +35,7 @@ const teachers = [
   },
   {
     teacherName: 'W/ro Tigist Amare', subject: 'Biology', gradeGroup: '11-12', improvementRate: 93,
+    performanceScore: 88, teachingMethodology: 'Visual/Diagram', professionalDevelopment: 'Biotechnology Seminar',
     lessonPlans: [
       { year: 2015, topic: 'Grade 11 Cell Biology & Genetics', gradeLevel: 'Grade 11', status: 'Approved', feedback: 'Excellent use of diagrams.' },
       { year: 2016, topic: 'Grade 12 Ecology & Environmental Science', gradeLevel: 'Grade 12', status: 'Approved', feedback: 'Good fieldwork proposal.' },
@@ -40,6 +44,7 @@ const teachers = [
   },
   {
     teacherName: 'Ato Yonas Kebede', subject: 'Physics', gradeGroup: '11-12', improvementRate: 91,
+    performanceScore: 95, teachingMethodology: 'Inquiry-Based', professionalDevelopment: 'Space Science Certification',
     lessonPlans: [
       { year: 2015, topic: 'Grade 11 Mechanics & Energy', gradeLevel: 'Grade 11', status: 'Approved', feedback: 'Clear experimental design.' },
       { year: 2016, topic: 'Grade 12 Waves, Optics & Thermodynamics', gradeLevel: 'Grade 12', status: 'Approved', feedback: 'Engaged students with practical demonstrations.' },
@@ -48,6 +53,7 @@ const teachers = [
   },
   {
     teacherName: 'Ato Tadesse Alemu', subject: 'History', gradeGroup: '11-12', improvementRate: 65,
+    performanceScore: 70, teachingMethodology: 'Lecture-Based', professionalDevelopment: 'Heritage Conservation',
     lessonPlans: [
       { year: 2015, topic: 'Grade 11 Ancient African Civilizations', gradeLevel: 'Grade 11', status: 'Missing', feedback: 'Plan was not submitted for review.' },
       { year: 2016, topic: 'Grade 12 World Wars & Post-Colonial Africa', gradeLevel: 'Grade 12', status: 'In Review', feedback: 'Submitted late. Awaiting detailed primary source list.' },
@@ -56,6 +62,7 @@ const teachers = [
   },
   {
     teacherName: 'W/ro Martha Yosef', subject: 'Economics', gradeGroup: '11-12', improvementRate: 88,
+    performanceScore: 82, teachingMethodology: 'Case-Study', professionalDevelopment: 'Macro-Economics Update',
     lessonPlans: [
       { year: 2015, topic: 'Grade 11 Microeconomics Principles', gradeLevel: 'Grade 11', status: 'Approved', feedback: 'Good local market examples.' },
       { year: 2016, topic: 'Grade 12 Macroeconomics Theories', gradeLevel: 'Grade 12', status: 'Approved', feedback: 'Encouraged critical analysis of economic policies.' },
@@ -64,6 +71,7 @@ const teachers = [
   },
   {
     teacherName: 'Ato Ephrem Zewde', subject: 'Geography', gradeGroup: '11-12', improvementRate: 87,
+    performanceScore: 80, teachingMethodology: 'Field-Data', professionalDevelopment: 'GIS Software Training',
     lessonPlans: [
       { year: 2015, topic: 'Grade 11 Physical Geography', gradeLevel: 'Grade 11', status: 'Approved', feedback: 'Good use of maps and field data.' },
       { year: 2016, topic: 'Grade 12 Human Geography: Urbanization', gradeLevel: 'Grade 12', status: 'Approved', feedback: 'Comprehensive data analysis tasks.' },
@@ -72,6 +80,7 @@ const teachers = [
   },
   {
     teacherName: 'W/ro Bethlehem Hailu', subject: 'Civics', gradeGroup: '11-12', improvementRate: 92,
+    performanceScore: 89, teachingMethodology: 'Group Debate', professionalDevelopment: 'Human Rights Law Course',
     lessonPlans: [
       { year: 2015, topic: 'Grade 11 Ethiopian Governance', gradeLevel: 'Grade 11', status: 'Approved', feedback: 'Good focus on constitutional rights.' },
       { year: 2016, topic: 'Grade 12 Global Civics & Human Rights', gradeLevel: 'Grade 12', status: 'Approved', feedback: 'Encouraged debate on international issues.' },
@@ -80,6 +89,7 @@ const teachers = [
   },
   {
     teacherName: 'Ato Kassahun Debebe', subject: 'Amharic', gradeGroup: '11-12', improvementRate: 89,
+    performanceScore: 91, teachingMethodology: 'Literature-Analysis', professionalDevelopment: 'Modern Linguistics',
     lessonPlans: [
       { year: 2015, topic: 'Grade 11 Amharic Grammar & Writing', gradeLevel: 'Grade 11', status: 'Approved', feedback: 'Clear grammar explanations.' },
       { year: 2016, topic: 'Grade 12 Amharic Literature & Poetry', gradeLevel: 'Grade 12', status: 'Approved', feedback: 'Rich analysis of classic texts.' },
@@ -88,6 +98,7 @@ const teachers = [
   },
   {
     teacherName: 'Ato Solomon Tsegaye', subject: 'Sport', gradeGroup: '11-12', improvementRate: 85,
+    performanceScore: 84, teachingMethodology: 'Practical/Physical', professionalDevelopment: 'First Aid & CPR Certified',
     lessonPlans: [
       { year: 2015, topic: 'Grade 11 Individual Sports & Fitness', gradeLevel: 'Grade 11', status: 'Approved', feedback: 'Focus on student health.' },
       { year: 2016, topic: 'Grade 12 Team Sports & Strategy', gradeLevel: 'Grade 12', status: 'Approved', feedback: 'Developed teamwork and leadership.' },
@@ -96,6 +107,7 @@ const teachers = [
   },
   {
     teacherName: 'W/ro Tolantu Dibaba', subject: 'Afaan Oromo', gradeGroup: '11-12', improvementRate: 86,
+    performanceScore: 93, teachingMethodology: 'Oral-Narrative', professionalDevelopment: 'Cultural Studies',
     lessonPlans: [
       { year: 2015, topic: 'Grade 11 Afaan Oromo Reading & Comprehension', gradeLevel: 'Grade 11', status: 'Approved', feedback: 'Effective vocabulary building.' },
       { year: 2016, topic: 'Grade 12 Afaan Oromo Oral Traditions', gradeLevel: 'Grade 12', status: 'Approved', feedback: 'Celebrated cultural heritage.' },
@@ -104,6 +116,7 @@ const teachers = [
   },
   {
     teacherName: 'Ato Bereket Mekonnen', subject: 'IT', gradeGroup: '11-12', improvementRate: 90,
+    performanceScore: 98, teachingMethodology: 'ICT-Integrated', professionalDevelopment: 'Full-Stack Web Dev (Node.js)',
     lessonPlans: [
       { year: 2015, topic: 'Grade 11 Computer Basics & MS Office', gradeLevel: 'Grade 11', status: 'Approved', feedback: 'Foundational digital literacy skills.' },
       { year: 2016, topic: 'Grade 12 Introduction to Programming (Scratch/Python)', gradeLevel: 'Grade 12', status: 'Approved', feedback: 'Strong focus on logical thinking.' },
@@ -112,6 +125,7 @@ const teachers = [
   },
   {
     teacherName: 'Ato Mohammed Nur', subject: 'Agriculture', gradeGroup: '11-12', improvementRate: 84,
+    performanceScore: 87, teachingMethodology: 'Practical Farm-Work', professionalDevelopment: 'Sustainable Irrigation',
     lessonPlans: [
       { year: 2015, topic: 'Grade 11 Crop Production & Soil Science', gradeLevel: 'Grade 11', status: 'Approved', feedback: 'Practical, hands-on approach.' },
       { year: 2016, topic: 'Grade 12 Livestock Management & Farm Economics', gradeLevel: 'Grade 12', status: 'Approved', feedback: 'Integrated economic principles.' },

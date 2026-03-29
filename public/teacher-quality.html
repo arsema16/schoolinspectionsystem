@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Quality - School Inspection System</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👩‍🏫</text></svg>">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header-content { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.8rem; font-weight: 600; }
+        .user-info { display: flex; align-items: center; gap: 1rem; }
+        .user-role { background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; }
+        .btn-logout { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 0.5rem 1.5rem; border-radius: 5px; cursor: pointer; }
+        .btn-logout:hover { background: rgba(255,255,255,0.3); }
+        .container { max-width: 1400px; margin: 2rem auto; padding: 0 2rem; }
+        .card { background: white; border-radius: 10px; padding: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 2rem; }
+        .card h2 { color: #667eea; margin-bottom: 1rem; }
+        .filter-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 1rem; }
+        .filter-row select { padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem; }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        table th { background: #f8f9fa; padding: 0.8rem; text-align: left; font-weight: 600; border-bottom: 2px solid #e5e7eb; }
+        table td { padding: 0.8rem; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+        table tr:hover { background: #f8f9fa; }
+        .status-badge { padding: 3px 10px; border-radius: 12px; font-size: 0.82em; font-weight: 600; }
+        .status-Approved { background: #dcfce7; color: #16a34a; }
+        .status-NeedsRevision { background: #fef9c3; color: #b45309; }
+        .status-Missing { background: #fee2e2; color: #dc2626; }
+        .status-InReview { background: #dbeafe; color: #2563eb; }
+        .back-btn { display: inline-flex; align-items: center; gap: 6px; color: white; text-decoration: none; opacity: 0.85; font-size: 0.95rem; }
+        .back-btn:hover { opacity: 1; }
+        .loading { color: #999; font-style: italic; }
+        .error { color: #dc2626; }
+        .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .summary-card { background: #f8f9fa; border-radius: 8px; padding: 1rem; text-align: center; }
+        .summary-card .num { font-size: 2rem; font-weight: 700; color: #667eea; }
+        .summary-card .label { font-size: 0.85rem; color: #666; margin-top: 4px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div style="display:flex; align-items:center; gap:1rem;">
+                <a href="/inspection-areas.html" class="back-btn">← Back</a>
+                <h1>👩‍🏫 Teacher Quality</h1>
+            </div>
+            <div class="user-info">
+                <span class="user-role" id="userRole">Loading...</span>
+                <button class="btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>Lesson Plan History (2015–2017)</h2>
+
+            <div class="summary-cards">
+                <div class="summary-card"><div class="num" id="totalTeachers">-</div><div class="label">Total Teachers</div></div>
+                <div class="summary-card"><div class="num" id="totalApproved" style="color:#16a34a">-</div><div class="label">Approved Plans</div></div>
+                <div class="summary-card"><div class="num" id="totalRevision" style="color:#b45309">-</div><div class="label">Needs Revision</div></div>
+                <div class="summary-card"><div class="num" id="totalMissing" style="color:#dc2626">-</div><div class="label">Missing Plans</div></div>
+                <div class="summary-card"><div class="num" id="totalReview" style="color:#2563eb">-</div><div class="label">In Review</div></div>
+            </div>
+
+            <div class="filter-row">
+                <select id="teacherGradeFilter" onchange="loadTeacherPlans()">
+                    <option value="">All Grade Groups</option>
+                    <option value="9-10">Grade 9 & 10</option>
+                    <option value="11-12">Grade 11 & 12</option>
+                </select>
+                <select id="teacherYearFilter" onchange="loadTeacherPlans()">
+                    <option value="">All Years</option>
+                    <option value="2015">2015</option>
+                    <option value="2016">2016</option>
+                    <option value="2017">2017</option>
+                </select>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Teacher</th>
+                            <th>Subject</th>
+                            <th>Grade Group</th>
+                            <th>Year</th>
+                            <th>Lesson Plan Topic</th>
+                            <th>Grade Level</th>
+                            <th>Status</th>
+                            <th>Feedback</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teacherBody">
+                        <tr><td colspan="8" class="loading">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        const token = localStorage.getItem('token');
+        if (!token) { window.location.href = '/login.html'; }
+
+        // Display user info
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        document.getElementById('userRole').textContent = userData.role || 'User';
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login.html';
+        }
+
+        async function loadTeacherPlans() {
+            const tbody = document.getElementById('teacherBody');
+            tbody.innerHTML = '<tr><td colspan="8" class="loading">Loading...</td></tr>';
+
+            const gradeGroup = document.getElementById('teacherGradeFilter').value;
+            const year = document.getElementById('teacherYearFilter').value;
+
+            let url = `${API_BASE}/teachers?`;
+            if (gradeGroup) url += `gradeGroup=${gradeGroup}&`;
+            if (year) url += `year=${year}`;
+
+            try {
+                const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (res.status === 401) { window.location.href = '/login.html'; return; }
+                if (!res.ok) throw new Error('Failed to load');
+                const teachers = await res.json();
+
+                // Summary counts
+                let approved = 0, revision = 0, missing = 0, review = 0;
+                teachers.forEach(t => (t.lessonPlans || []).forEach(lp => {
+                    if (lp.status === 'Approved') approved++;
+                    else if (lp.status === 'Needs Revision') revision++;
+                    else if (lp.status === 'Missing') missing++;
+                    else if (lp.status === 'In Review') review++;
+                }));
+                document.getElementById('totalTeachers').textContent = teachers.length;
+                document.getElementById('totalApproved').textContent = approved;
+                document.getElementById('totalRevision').textContent = revision;
+                document.getElementById('totalMissing').textContent = missing;
+                document.getElementById('totalReview').textContent = review;
+
+                const statusClass = { 'Approved': 'Approved', 'Needs Revision': 'NeedsRevision', 'Missing': 'Missing', 'In Review': 'InReview' };
+                let rows = '';
+                teachers.forEach(t => {
+                    const plans = t.lessonPlans && t.lessonPlans.length ? t.lessonPlans : [];
+                    if (plans.length === 0) {
+                        rows += `<tr>
+                            <td>${t.teacherName}</td><td>${t.subject}</td>
+                            <td>${t.gradeGroup === '9-10' ? 'Grade 9 & 10' : 'Grade 11 & 12'}</td>
+                            <td colspan="5" style="color:#999">No lesson plans for selected year</td>
+                        </tr>`;
+                    } else {
+                        plans.forEach((lp, i) => {
+                            rows += `<tr>
+                                ${i === 0 ? `<td rowspan="${plans.length}">${t.teacherName}</td><td rowspan="${plans.length}">${t.subject}</td><td rowspan="${plans.length}">${t.gradeGroup === '9-10' ? 'Grade 9 & 10' : 'Grade 11 & 12'}</td>` : ''}
+                                <td>${lp.year}</td>
+                                <td>${lp.topic}</td>
+                                <td>${lp.gradeLevel}</td>
+                                <td><span class="status-badge status-${statusClass[lp.status] || ''}">${lp.status}</span></td>
+                                <td style="font-size:0.85em;color:#555">${lp.feedback || ''}</td>
+                            </tr>`;
+                        });
+                    }
+                });
+                tbody.innerHTML = rows || '<tr><td colspan="8">No data found</td></tr>';
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="8" class="error">Failed to load teacher data: ${err.message}</td></tr>`;
+            }
+        }
+
+        loadTeacherPlans();
+    </script>
+</body>
+</html>

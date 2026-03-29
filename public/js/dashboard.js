@@ -112,7 +112,6 @@ async function loadDashboardData() {
         loadRedFlags().catch(err => console.error('Red flags error:', err));
         loadSuggestions().catch(err => console.error('Suggestions error:', err));
         load2018Predictions().catch(err => console.error('Predictions error:', err));
-        loadTeacherPlans().catch(err => console.error('Teacher plans error:', err));
         
         // Skip correlations for now (they're slow and not critical)
         // loadCorrelations().catch(err => console.error('Correlations error:', err));
@@ -844,6 +843,18 @@ function showAdminSection() {
     } else {
         console.log('User is not Admin, role is:', userRole);
     }
+}
+
+// Tab switching
+function switchTab(tab) {
+    const isStudents = tab === 'students';
+    document.getElementById('tabContentStudents').style.display = isStudents ? '' : 'none';
+    document.getElementById('tabContentTeachers').style.display = isStudents ? 'none' : '';
+    document.getElementById('tabStudents').style.background = isStudents ? '#667eea' : '#e5e7eb';
+    document.getElementById('tabStudents').style.color = isStudents ? 'white' : '#555';
+    document.getElementById('tabTeachers').style.background = isStudents ? '#e5e7eb' : '#667eea';
+    document.getElementById('tabTeachers').style.color = isStudents ? '#555' : 'white';
+    if (!isStudents) loadTeacherPlans();
 }
 
 // Teacher Lesson Plans

@@ -136,6 +136,7 @@ const teachers = [
   // Grade 9 & 10
   {
     teacherName: 'Ato Henok Belachew', subject: 'Math', gradeGroup: '9-10', improvementRate: 94,
+    performanceScore: 94, teachingMethodology: 'Student-Centered', professionalDevelopment: 'Mathematical Modeling Workshop',
     lessonPlans: [
       { year: 2015, topic: 'Grade 9 Number Systems & Basic Algebra', gradeLevel: 'Grade 9', status: 'Approved', feedback: 'Excellent foundational teaching.' },
       { year: 2016, topic: 'Grade 10 Geometry & Measurement', gradeLevel: 'Grade 10', status: 'Approved', feedback: 'Clear visual aids.' },
@@ -144,6 +145,7 @@ const teachers = [
   },
   {
     teacherName: 'W/ro Sara Tefera', subject: 'English', gradeGroup: '9-10', improvementRate: 75,
+    performanceScore: 81, teachingMethodology: 'Audio-Lingual', professionalDevelopment: 'TOEFL Training Certification',
     lessonPlans: [
       { year: 2015, topic: 'Grade 9 English Reading & Writing', gradeLevel: 'Grade 9', status: 'Needs Revision', feedback: 'More structured reading activities needed.' },
       { year: 2016, topic: 'Grade 10 English Comprehension & Essay Writing', gradeLevel: 'Grade 10', status: 'Approved', feedback: 'Improved lesson structure.' },
@@ -151,7 +153,8 @@ const teachers = [
     ]
   },
   {
-    teacherName: 'Ato Tesfaye Worku', subject: 'Chemistry', gradeGroup: '9-10', improvementRate: 78,
+    teacherName: 'Ato Elias Haile', subject: 'Chemistry', gradeGroup: '9-10', improvementRate: 78,
+    performanceScore: 65, teachingMethodology: 'Lecture-Based', professionalDevelopment: 'Laboratory Management',
     lessonPlans: [
       { year: 2015, topic: 'Grade 9 Introduction to Chemistry', gradeLevel: 'Grade 9', status: 'Needs Revision', feedback: 'Lab safety protocols insufficient.' },
       { year: 2016, topic: 'Grade 10 Chemical Reactions & Stoichiometry', gradeLevel: 'Grade 10', status: 'Needs Revision', feedback: 'Still lacking detailed safety plans for experiments.' },
@@ -160,6 +163,7 @@ const teachers = [
   },
   {
     teacherName: 'W/ro Mulugeta Zenebe', subject: 'Biology', gradeGroup: '9-10', improvementRate: 90,
+    performanceScore: 87, teachingMethodology: 'Hands-on Lab', professionalDevelopment: 'Genetics Research Seminar',
     lessonPlans: [
       { year: 2015, topic: 'Grade 9 Introduction to Living Organisms', gradeLevel: 'Grade 9', status: 'Approved', feedback: 'Engaging and interactive.' },
       { year: 2016, topic: 'Grade 10 Plant & Animal Systems', gradeLevel: 'Grade 10', status: 'Approved', feedback: 'Good use of diagrams and models.' },
@@ -168,6 +172,7 @@ const teachers = [
   },
   {
     teacherName: 'Ato Girma Tola', subject: 'Physics', gradeGroup: '9-10', improvementRate: 92,
+    performanceScore: 91, teachingMethodology: 'Inquiry-Based', professionalDevelopment: 'STEM Pedagogy Course',
     lessonPlans: [
       { year: 2015, topic: 'Grade 9 Basic Mechanics & Forces', gradeLevel: 'Grade 9', status: 'Approved', feedback: 'Excellent practical demonstrations.' },
       { year: 2016, topic: 'Grade 10 Electricity & Magnetism Basics', gradeLevel: 'Grade 10', status: 'Approved', feedback: 'Clear problem-solving steps.' },
@@ -176,6 +181,7 @@ const teachers = [
   },
   {
     teacherName: 'W/ro Rahel Negussie', subject: 'History', gradeGroup: '9-10', improvementRate: 62,
+    performanceScore: 78, teachingMethodology: 'Discussion-Based', professionalDevelopment: 'African History Symposium',
     lessonPlans: [
       { year: 2015, topic: 'Grade 9 Ethiopian Ancient History', gradeLevel: 'Grade 9', status: 'Missing', feedback: 'Plan not submitted for review.' },
       { year: 2016, topic: 'Grade 10 World History: Industrial Revolution', gradeLevel: 'Grade 10', status: 'In Review', feedback: 'Submitted late. Requires more varied sources.' },
@@ -184,6 +190,7 @@ const teachers = [
   },
   {
     teacherName: 'Ato Fikru Desalegn', subject: 'Economics', gradeGroup: '9-10', improvementRate: 86,
+    performanceScore: 83, teachingMethodology: 'Real-World Application', professionalDevelopment: 'Market Analysis Seminar',
     lessonPlans: [
       { year: 2015, topic: 'Grade 9 Basic Economic Concepts', gradeLevel: 'Grade 9', status: 'Approved', feedback: 'Relatable to student experiences.' },
       { year: 2016, topic: 'Grade 10 Markets & Business Principles', gradeLevel: 'Grade 10', status: 'Approved', feedback: 'Encouraged entrepreneurial thinking.' },
@@ -192,6 +199,7 @@ const teachers = [
   },
   {
     teacherName: 'W/ro Senait Moges', subject: 'Geography', gradeGroup: '9-10', improvementRate: 50,
+    performanceScore: 72, teachingMethodology: 'Map-Work/Visual', professionalDevelopment: 'Cartography Training',
     lessonPlans: [
       { year: 2015, topic: 'Grade 9 Physical Features of Ethiopia', gradeLevel: 'Grade 9', status: 'Missing', feedback: 'Plan not submitted.' },
       { year: 2016, topic: 'Grade 10 World Climate Zones', gradeLevel: 'Grade 10', status: 'Missing', feedback: 'Plan still missing for second consecutive year. Urgent.' },
@@ -200,6 +208,7 @@ const teachers = [
   },
   {
     teacherName: 'Ato Kebede Mengistu', subject: 'Civics', gradeGroup: '9-10', improvementRate: 88,
+    performanceScore: 89, teachingMethodology: 'Peer-Debate', professionalDevelopment: 'Conflict Resolution Training',
     lessonPlans: [
       { year: 2015, topic: 'Grade 9 Rights & Responsibilities', gradeLevel: 'Grade 9', status: 'Approved', feedback: 'Fostered civic awareness.' },
       { year: 2016, topic: 'Grade 10 Government & Democracy', gradeLevel: 'Grade 10', status: 'Approved', feedback: 'Balanced discussions.' },
@@ -208,6 +217,7 @@ const teachers = [
   },
   {
     teacherName: 'W/ro Atsede Gebre', subject: 'Amharic', gradeGroup: '9-10', improvementRate: 87,
+    performanceScore: 90, teachingMethodology: 'Prose Analysis', professionalDevelopment: 'Modern Literature Review',
     lessonPlans: [
       { year: 2015, topic: 'Grade 9 Amharic Reading & Writing', gradeLevel: 'Grade 9', status: 'Approved', feedback: 'Strong foundational skills.' },
       { year: 2016, topic: 'Grade 10 Amharic Grammar & Composition', gradeLevel: 'Grade 10', status: 'Approved', feedback: 'Improved student writing.' },
@@ -216,6 +226,7 @@ const teachers = [
   },
   {
     teacherName: 'Ato Tariku Bekele', subject: 'Sport', gradeGroup: '9-10', improvementRate: 83,
+    performanceScore: 88, teachingMethodology: 'Practical/Physical', professionalDevelopment: 'Coaching License Level 1',
     lessonPlans: [
       { year: 2015, topic: 'Grade 9 Fitness & Individual Drills', gradeLevel: 'Grade 9', status: 'Approved', feedback: 'Focused on basic physical development.' },
       { year: 2016, topic: 'Grade 10 Team Sports & Cooperation', gradeLevel: 'Grade 10', status: 'Approved', feedback: 'Developed teamwork.' },
@@ -224,6 +235,7 @@ const teachers = [
   },
   {
     teacherName: 'Ato Jalata Kedir', subject: 'Afaan Oromo', gradeGroup: '9-10', improvementRate: 85,
+    performanceScore: 92, teachingMethodology: 'Linguistic-Immersion', professionalDevelopment: 'Grammar Development Course',
     lessonPlans: [
       { year: 2015, topic: 'Grade 9 Afaan Oromo Speaking & Listening', gradeLevel: 'Grade 9', status: 'Approved', feedback: 'Encouraged oral fluency.' },
       { year: 2016, topic: 'Grade 10 Afaan Oromo Cultural Texts', gradeLevel: 'Grade 10', status: 'Approved', feedback: 'Promoted cultural understanding.' },
@@ -232,6 +244,7 @@ const teachers = [
   },
   {
     teacherName: 'W/ro Eden Wolde', subject: 'IT', gradeGroup: '9-10', improvementRate: 89,
+    performanceScore: 96, teachingMethodology: 'Project-Based', professionalDevelopment: 'Python Programming Cert',
     lessonPlans: [
       { year: 2015, topic: 'Grade 9 Digital Literacy & Internet Safety', gradeLevel: 'Grade 9', status: 'Approved', feedback: 'Essential for modern students.' },
       { year: 2016, topic: 'Grade 10 Basic Computer Programming (Flowcharts)', gradeLevel: 'Grade 10', status: 'Approved', feedback: 'Introduced computational thinking.' },

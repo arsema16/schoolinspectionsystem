@@ -17,6 +17,13 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDashboardData();
     setupYearFilterHandler();
     showAdminSection();
+
+    // Auto-switch to teacher tab if coming from inspection-areas
+    if (sessionStorage.getItem('dashTab') === 'teachers') {
+        sessionStorage.removeItem('dashTab');
+        switchTab('teachers');
+    }
+
     
     // Scroll to admin section if hash is present
     if (window.location.hash === '#adminSection') {

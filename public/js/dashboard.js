@@ -112,6 +112,7 @@ async function loadDashboardData() {
         loadRedFlags().catch(err => console.error('Red flags error:', err));
         loadSuggestions().catch(err => console.error('Suggestions error:', err));
         load2018Predictions().catch(err => console.error('Predictions error:', err));
+        loadTeacherPlans().catch(err => console.error('Teacher plans error:', err));
         
         // Skip correlations for now (they're slow and not critical)
         // loadCorrelations().catch(err => console.error('Correlations error:', err));
@@ -842,6 +843,55 @@ function showAdminSection() {
         }
     } else {
         console.log('User is not Admin, role is:', userRole);
+    }
+}
+
+// Teacher Lesson Plans
+async function loadTeacherPlans() {
+    const tbody = document.getElementById('teacherBody');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="8" class="loading">Loading...</td></tr>';
+
+    const gradeGroup = document.getElementById('teacherGradeFilter').value;
+    const year = document.getElementById('teacherYearFilter').value;
+
+    let url = `${API_BASE}/teachers?`;
+    if (gradeGroup) url += `gradeGroup=${gradeGroup}&`;
+    if (year) url += `year=${year}`;
+
+    try {
+        const res = await fetch(url, { headers: { 'Authorization': `Bearer ${authToken}` } });
+        if (!res.ok) throw new Error('Failed to load');
+        const teachers = await res.json();
+
+        const statusColor = { 'Approved': '#22c55e', 'Needs Revision': '#f59e0b', 'Missing': '#ef4444', 'In Review': '#3b82f6' };
+
+        let rows = '';
+        teachers.forEach(t => {
+            const plans = t.lessonPlans && t.lessonPlans.length ? t.lessonPlans : [];
+            if (plans.length === 0) {
+                rows += `<tr>
+                    <td>${t.teacherName}</td><td>${t.subject}</td>
+                    <td>${t.gradeGroup === '9-10' ? 'Grade 9 & 10' : 'Grade 11 & 12'}</td>
+                    <td colspan="5" style="color:#999">No lesson plans for selected year</td>
+                </tr>`;
+            } else {
+                plans.forEach((lp, i) => {
+                    rows += `<tr>
+                        ${i === 0 ? `<td rowspan="${plans.length}">${t.teacherName}</td><td rowspan="${plans.length}">${t.subject}</td><td rowspan="${plans.length}">${t.gradeGroup === '9-10' ? 'Grade 9 & 10' : 'Grade 11 & 12'}</td>` : ''}
+                        <td>${lp.year}</td>
+                        <td>${lp.topic}</td>
+                        <td>${lp.gradeLevel}</td>
+                        <td><span style="color:${statusColor[lp.status]||'#666'};font-weight:600">${lp.status}</span></td>
+                        <td style="font-size:0.85em">${lp.feedback || ''}</td>
+                    </tr>`;
+                });
+            }
+        });
+
+        tbody.innerHTML = rows || '<tr><td colspan="8">No data found</td></tr>';
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="8" class="error">Failed to load teacher data</td></tr>`;
     }
 }
 

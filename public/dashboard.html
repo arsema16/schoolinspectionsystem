@@ -664,6 +664,43 @@
             </div>
         </div>
 
+        <!-- Teacher Lesson Plans -->
+        <div class="card full-width">
+            <h2>👩‍🏫 Teacher Lesson Plans</h2>
+            <div class="filter-row" style="margin-bottom:12px; display:flex; gap:12px; flex-wrap:wrap;">
+                <select id="teacherGradeFilter" onchange="loadTeacherPlans()">
+                    <option value="">All Grade Groups</option>
+                    <option value="9-10">Grade 9 & 10</option>
+                    <option value="11-12">Grade 11 & 12</option>
+                </select>
+                <select id="teacherYearFilter" onchange="loadTeacherPlans()">
+                    <option value="">All Years</option>
+                    <option value="2015">2015</option>
+                    <option value="2016">2016</option>
+                    <option value="2017">2017</option>
+                </select>
+            </div>
+            <div class="table-container">
+                <table id="teacherTable">
+                    <thead>
+                        <tr>
+                            <th>Teacher</th>
+                            <th>Subject</th>
+                            <th>Grade Group</th>
+                            <th>Year</th>
+                            <th>Lesson Plan Topic</th>
+                            <th>Grade Level</th>
+                            <th>Status</th>
+                            <th>Feedback</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teacherBody">
+                        <tr><td colspan="8" class="loading">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- Suggestions -->
         <div class="card full-width">
             <h2>💡 Insights & Recommendations</h2>

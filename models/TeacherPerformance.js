@@ -1,8 +1,19 @@
 const mongoose = require("mongoose");
 
-const schema = new mongoose.Schema({
-    teacherName: String,
-    improvementRate: Number
+const lessonPlanSchema = new mongoose.Schema({
+  year: { type: Number, required: true },
+  topic: { type: String, required: true },
+  gradeLevel: { type: String, required: true }, // e.g. "Grade 11", "Grade 9 & 10"
+  status: { type: String, enum: ['Approved', 'Needs Revision', 'Missing', 'In Review'], default: 'In Review' },
+  feedback: { type: String }
 });
+
+const schema = new mongoose.Schema({
+  teacherName: { type: String, required: true },
+  subject: { type: String },
+  gradeGroup: { type: String, enum: ['9-10', '11-12'] },
+  improvementRate: { type: Number, default: 0 },
+  lessonPlans: [lessonPlanSchema]
+}, { timestamps: true });
 
 module.exports = mongoose.model("TeacherPerformance", schema);

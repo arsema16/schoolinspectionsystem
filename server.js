@@ -21,6 +21,7 @@ const infrastructureRoutes = require("./routes/infrastructureRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const auditRoutes = require("./routes/auditRoutes");
 const intelligenceRoutes = require("./routes/intelligenceRoutes");
+const teacherRoutes = require("./routes/teacherRoutes");
 
 console.log("Loading routes...");
 app.use("/api/auth", authRoutes);
@@ -32,6 +33,7 @@ app.use("/api/infrastructure", infrastructureRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/audit", auditRoutes);
 app.use(intelligenceRoutes);
+app.use("/api/teachers", teacherRoutes);
 
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public/index.html"));

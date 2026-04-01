@@ -45,11 +45,13 @@ app.listen(PORT, () => {
 
     // Keep Render free tier alive - ping every 14 minutes
     if (process.env.RENDER) {
-        const https = require('https');
-        setInterval(() => {
-            https.get('https://schoolinspectionsystem.onrender.com/api/auth/login', () => {
-                console.log('Keep-alive ping sent');
-            }).on('error', () => {});
-        }, 14 * 60 * 1000);
+        setTimeout(() => {
+            const https = require('https');
+            setInterval(() => {
+                https.get('https://schoolinspectionsystem.onrender.com/', () => {
+                    console.log('Keep-alive ping sent');
+                }).on('error', () => {});
+            }, 14 * 60 * 1000);
+        }, 60 * 1000); // wait 1 min after startup before pinging
     }
 });

@@ -40,6 +40,16 @@ app.get("/", (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () =>
-    console.log(`Server running on port ${PORT}`)
-);
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+
+    // Keep Render free tier alive - ping every 14 minutes
+    if (process.env.RENDER) {
+        const https = require('https');
+        setInterval(() => {
+            https.get('https://schoolinspectionsystem.onrender.com/api/auth/login', () => {
+                console.log('Keep-alive ping sent');
+            }).on('error', () => {});
+        }, 14 * 60 * 1000);
+    }
+});

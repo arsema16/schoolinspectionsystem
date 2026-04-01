@@ -315,29 +315,44 @@
             const successMsg = document.getElementById('successMessage');
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
+            const btn = event.target.querySelector('button[type=submit]');
             
             errorMsg.style.display = 'none';
             successMsg.style.display = 'none';
 
             try {
-                const res = await fetch("/api/auth/login", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ username, password })
-                });
+                btn.disabled = true;
+                btn.textContent = 'Connecting...';
+
+                let res;
+                // Retry up to 4 times on 503 (Render cold start)
+                for (let attempt = 1; attempt <= 4; attempt++) {
+                    res = await fetch("/api/auth/login", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ username, password })
+                    });
+                    if (res.status !== 503) break;
+                    btn.textContent = `Server starting up... (${attempt}/4)`;
+                    await new Promise(r => setTimeout(r, 8000));
+                }
+
+                const text = await res.text();
+                let data;
+                try { data = JSON.parse(text); } catch(e) {
+                    throw new Error('Server is starting up, please try again in a moment.');
+                }
 
                 if (!res.ok) {
-                    const error = await res.json();
-                    errorMsg.textContent = error.message || "Login failed. Please check your credentials.";
+                    errorMsg.textContent = data.message || "Login failed. Please check your credentials.";
                     errorMsg.style.display = 'block';
                     return;
                 }
-
-                const data = await res.json();
                 
                 localStorage.setItem("token", data.token);
                 localStorage.setItem("role", data.role);
                 localStorage.setItem("username", data.username);
+                localStorage.setItem("user", JSON.stringify({ username: data.username, role: data.role }));
                 
                 successMsg.textContent = "Login successful! Redirecting...";
                 successMsg.style.display = 'block';
@@ -348,8 +363,11 @@
 
             } catch (error) {
                 console.error("Login error:", error);
-                errorMsg.textContent = "Login failed. Please try again.";
+                errorMsg.textContent = error.message || "Login failed. Please try again.";
                 errorMsg.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Login';
             }
         }
     </script>

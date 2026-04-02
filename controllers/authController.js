@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 const auditLogger = require("../services/AuditLogger");
 
 const JWT_SECRET = process.env.JWT_SECRET || "secretkey";
@@ -62,6 +63,9 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ message: "Database connecting, please try again in a moment." });
+    }
     const { username, password } = req.body;
 
     if (!username || !password) {

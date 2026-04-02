@@ -2,7 +2,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const TeacherPerformance = require('./models/TeacherPerformance');
 
-mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://arsema2328_db_user:4hozFjU39DntHlLW@cluster0.h2dg2wi.mongodb.net/?appName=Cluster0');
+mongoose.connect(process.env.MONGO_URI || 'mongodb://mongo:QUdvdXtdNuSPFAKnirJqIpwiCsrWDEJX@turntable.proxy.rlwy.net:55711');
 
 const teachers = [
   // Grade 11 & 12

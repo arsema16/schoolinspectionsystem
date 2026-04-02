@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const connectDB = async () => {
   try {
-    const mongoURI = process.env.MONGODB_URI || "mongodb://mongo:QUdvdXtdNuSPFAKnirJqIpwiCsrWDEJX@turntable.proxy.rlwy.net:55711";
+    const mongoURI = process.env.MONGODB_URI || process.env.MONGO_URL || "mongodb://mongo:QUdvdXtdNuSPFAKnirJqIpwiCsrWDEJX@turntable.proxy.rlwy.net:55711";
     await mongoose.connect(mongoURI);
     console.log("MongoDB Connected Successfully");
   } catch (error) {

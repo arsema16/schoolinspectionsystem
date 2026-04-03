@@ -34,6 +34,7 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/audit", auditRoutes);
 app.use(intelligenceRoutes);
 app.use("/api/teachers", teacherRoutes);
+app.use(require("./routes/seedRoute"));
 
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public/index.html"));

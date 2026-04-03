@@ -8,7 +8,20 @@ router.get('/api/seed-students', async (req, res) => {
   try {
     const Student = require('../models/Student');
     const count = await Student.countDocuments();
-    if (count > 0) return res.json({ message: `Already have ${count} students` });
+    if (count > 0) {
+      // Check which years are missing
+      const years = [2015, 2016, 2017];
+      const missing = [];
+      for (const y of years) {
+        const c = await Student.countDocuments({ year: y });
+        if (c === 0) missing.push(y);
+      }
+      if (missing.length === 0) return res.json({ message: `Already have ${count} students across all years` });
+      // Only insert missing years below
+      var yearsToInsert = missing;
+    } else {
+      var yearsToInsert = [2015, 2016, 2017];
+    }
 
     function parseRosterSheet(sheet) {
       const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
@@ -38,7 +51,7 @@ router.get('/api/seed-students', async (req, res) => {
 
     let total = 0;
     const results = {};
-    for (const year of [2015, 2016, 2017]) {
+    for (const year of yearsToInsert) {
       const filePath = path.join(__dirname, '..', `${year}.xlsx`);
       if (!fs.existsSync(filePath)) { results[year] = 'file not found'; continue; }
       const wb = xlsx.readFile(filePath);
